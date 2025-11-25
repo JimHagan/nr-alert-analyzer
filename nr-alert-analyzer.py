@@ -14,7 +14,10 @@ Dependencies:
 
 Usage:
     python nr-alert-analyzer.py --api_key "NRAK-..." --account_id 12345
-    python nr-alert-analyzer.py ... --exclude_warnings
+    
+    # By default, WARNINGs are excluded. To include them:
+    python nr-alert-analyzer.py ... --include_warnings
+    
     python nr-alert-analyzer.py ... --show_top_n 20
     python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_api_key "..."
     
@@ -42,7 +45,7 @@ def print_header(title):
 
 # --- GraphQL Functions ---
 
-def build_nrql_query(account_id, start_time, end_time, exclude_warnings=False):
+def build_nrql_query(account_id, start_time, end_time, exclude_warnings=True):
     """
     Constructs the GraphQL payload to fetch NrAiIncident data via NRQL.
     """
@@ -81,14 +84,16 @@ def build_nrql_query(account_id, start_time, end_time, exclude_warnings=False):
     
     return {"query": query, "variables": variables}
 
-def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=False):
+def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=True):
     """
     Executes the GraphQL request to New Relic.
     """
     print(f"  Fetching incidents from Account {account_id}...")
     print(f"  Window: {start_time} to {end_time}")
     if exclude_warnings:
-        print("  Filter: Excluding 'warning' priority incidents.")
+        print("  Filter: Excluding 'warning' priority incidents (Default).")
+    else:
+        print("  Filter: Including ALL priorities (Warnings included).")
     
     headers = {
         "Content-Type": "application/json",
@@ -393,8 +398,8 @@ def main():
                         help="Number of top items to show for conditions and entities (10-100). Default: 10.")
     
     # Filtering Options
-    parser.add_argument("--exclude_warnings", action="store_true",
-                        help="Exclude warning incidents (Priority = 'warning').")
+    parser.add_argument("--include_warnings", action="store_true",
+                        help="Include warning incidents (Default is to exclude them).")
 
     # Gemini Flags
     parser.add_argument("--analyze_with_gemini", action="store_true", 
@@ -417,9 +422,12 @@ def main():
         print("Error: --show_top_n must be between 10 and 100.")
         return
 
+    # Logic: Default is to exclude warnings unless --include_warnings is passed
+    exclude_warnings = not args.include_warnings
+
     # 1. Fetch Data
     print_header("Data Fetching")
-    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time, args.exclude_warnings)
+    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time, exclude_warnings)
     
     if not results:
         print("No data found or API error.")
