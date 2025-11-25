@@ -1,5 +1,5 @@
 """
-New Relic Incident Analyzer (NrAiIncident)
+New Relic Alert Analyzer (nr-alert-analyzer.py)
 
 Description:
 This script interacts with New Relic's GraphQL API (NerdGraph) to fetch 
@@ -14,6 +14,7 @@ Dependencies:
 
 Usage:
     python nr-alert-analyzer.py --api_key "NRAK-..." --account_id 12345
+    python nr-alert-analyzer.py ... --show_top_n 20
     python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_api_key "..."
     
     # To send ONLY the summary (lighter payload):
@@ -175,7 +176,7 @@ def analyze_severity(df):
         
     return ", ".join(summary_lines)
 
-def analyze_root_cause(df):
+def analyze_root_cause(df, top_n=10):
     """
     Analyzes by Policy, Condition, and Priority to find the configuration source of noise.
     """
@@ -191,9 +192,9 @@ def analyze_root_cause(df):
     
     # Group by Policy + Condition + Priority
     grouped = df.groupby(available_cols).size().reset_index(name='count')
-    grouped = grouped.sort_values('count', ascending=False).head(10)
+    grouped = grouped.sort_values('count', ascending=False).head(top_n)
     
-    print("**Top 10 Triggering Conditions:**")
+    print(f"**Top {top_n} Triggering Conditions:**")
     summary_lines = []
     
     for idx, row in grouped.iterrows():
@@ -205,12 +206,13 @@ def analyze_root_cause(df):
         # Updated print format to include Priority
         print(f"  {idx + 1}. [{count}] Priority: {priority} | Policy: '{policy}' -> Condition: '{condition}'")
         
-        # Include top 10 in summary to give Gemini full context of the main drivers
+        # Keep the summary for Gemini concise, but include the major hitters
+        # If list is very long, we might want to cap summary, but typically Top N is fine.
         summary_lines.append(f"[{priority}] Policy '{policy}' / Condition '{condition}' ({count} times)")
 
     return "\n".join(summary_lines)
 
-def analyze_entities(df):
+def analyze_entities(df, top_n=10):
     """
     Analyzes by Entity (Target) and shows associated conditions/priorities.
     """
@@ -224,10 +226,10 @@ def analyze_entities(df):
         print("No entity/target name column found.")
         return "Entity info missing."
         
-    # Get top 10 entities
-    top_entities = df[target_col].value_counts().head(10)
+    # Get top N entities
+    top_entities = df[target_col].value_counts().head(top_n)
     
-    print(f"**Top 10 Noisiest Entities ({target_col}):**")
+    print(f"**Top {top_n} Noisiest Entities ({target_col}):**")
     summary_lines = []
     
     for entity, total_count in top_entities.items():
@@ -360,7 +362,7 @@ def call_gemini(summary_text, api_key):
 # --- Main ---
 
 def main():
-    parser = argparse.ArgumentParser(description="New Relic NrAiIncident Analyzer")
+    parser = argparse.ArgumentParser(description="New Relic Alert Analyzer")
     
     # Required/Core Arguments
     parser.add_argument("--api_key", required=True, help="New Relic User API Key (NRAK-...)")
@@ -376,6 +378,10 @@ def main():
     parser.add_argument("--end_time", default=default_end.strftime("%Y-%m-%d %H:%M:%S"),
                         help="End time (YYYY-MM-DD HH:MM:SS). Default: Now.")
 
+    # Reporting Options
+    parser.add_argument("--show_top_n", type=int, default=10,
+                        help="Number of top items to show for conditions and entities (10-100). Default: 10.")
+
     # Gemini Flags
     parser.add_argument("--analyze_with_gemini", action="store_true", 
                         help="Send data to Gemini for AI analysis.")
@@ -390,6 +396,11 @@ def main():
     # validate gemini key if flag is present
     if args.analyze_with_gemini and not args.gemini_api_key:
         print("Error: --analyze_with_gemini requires --gemini_api_key.")
+        return
+
+    # Validate show_top_n
+    if not (10 <= args.show_top_n <= 100):
+        print("Error: --show_top_n must be between 10 and 100.")
         return
 
     # 1. Fetch Data
@@ -411,8 +422,8 @@ def main():
     # 3. Run Analysis
     temp_sum = analyze_temporal(df)
     sev_sum = analyze_severity(df)
-    root_sum = analyze_root_cause(df)
-    ent_sum = analyze_entities(df)
+    root_sum = analyze_root_cause(df, args.show_top_n)
+    ent_sum = analyze_entities(df, args.show_top_n)
 
     # 4. Gemini Integration
     if args.analyze_with_gemini:
