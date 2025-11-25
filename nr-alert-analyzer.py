@@ -18,6 +18,9 @@ Usage:
     # By default, WARNINGs are excluded. To include them:
     python nr-alert-analyzer.py ... --include_warnings
     
+    # Adjust the fetch limit (Default: 10000)
+    python nr-alert-analyzer.py ... --limit 5000
+    
     python nr-alert-analyzer.py ... --show_top_n 20
     python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_api_key "..."
     
@@ -45,89 +48,152 @@ def print_header(title):
 
 # --- GraphQL Functions ---
 
-def build_nrql_query(account_id, start_time, end_time, exclude_warnings=True):
+def run_graphql_query(api_key, payload):
     """
-    Constructs the GraphQL payload to fetch NrAiIncident data via NRQL.
+    Helper to run the actual HTTP post to GraphQL.
     """
-    # Base query
-    base_query = "SELECT * FROM NrAiIncident"
-    
-    # Add filter if exclude_warnings is True
-    if exclude_warnings:
-        base_query += " WHERE priority != 'warning'"
-        
-    # Note: LIMIT 2000 is the standard max for NRQL. 
-    nrql = (
-        f"{base_query} "
-        f"SINCE '{start_time}' UNTIL '{end_time}' "
-        f"LIMIT 2000"
-    )
-    
-    # GraphQL Query Structure
-    # FIXED: Changed $nrqlQuery type from String! to Nrql! to match schema requirements
-    query = """
-    query ($accountId: Int!, $nrqlQuery: Nrql!) {
-      actor {
-        account(id: $accountId) {
-          nrql(query: $nrqlQuery) {
-            results
-          }
-        }
-      }
-    }
-    """
-    
-    variables = {
-        "accountId": int(account_id),
-        "nrqlQuery": nrql
-    }
-    
-    return {"query": query, "variables": variables}
-
-def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=True):
-    """
-    Executes the GraphQL request to New Relic.
-    """
-    print(f"  Fetching incidents from Account {account_id}...")
-    print(f"  Window: {start_time} to {end_time}")
-    if exclude_warnings:
-        print("  Filter: Excluding 'warning' priority incidents (Default).")
-    else:
-        print("  Filter: Including ALL priorities (Warnings included).")
-    
     headers = {
         "Content-Type": "application/json",
         "API-Key": api_key
     }
-    
-    payload = build_nrql_query(account_id, start_time, end_time, exclude_warnings)
-    
     try:
         response = requests.post(NEW_RELIC_GRAPHQL_URL, json=payload, headers=headers)
-        
         if response.status_code == 200:
-            data = response.json()
-            
-            # Check for GraphQL errors
-            if 'errors' in data:
-                print("\nError in GraphQL response:")
-                print(json.dumps(data['errors'], indent=2))
-                return None
-                
-            # Navigate the JSON response to get the list of events
-            try:
-                results = data['data']['actor']['account']['nrql']['results']
-                return results
-            except KeyError as e:
-                print(f"\nUnexpected response structure: {e}")
-                return None
+            return response.json()
         else:
             print(f"\nAPI Request failed with status {response.status_code}: {response.text}")
             return None
-            
     except requests.exceptions.RequestException as e:
         print(f"\nNetwork error occurred: {e}")
         return None
+
+def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=True, limit=10000):
+    """
+    Executes the GraphQL request to New Relic using Key-Set Pagination (Time Walking).
+    This circumvents the NRQL 2000/5000 offset limit.
+    """
+    print(f"  Fetching incidents from Account {account_id}...")
+    print(f"  Window: {start_time} to {end_time}")
+    print(f"  Target Limit: {limit} incidents")
+    
+    if exclude_warnings:
+        print("  Filter: Excluding 'warning' priority incidents (Default).")
+    else:
+        print("  Filter: Including ALL priorities (Warnings included).")
+
+    all_incidents = []
+    
+    # NRQL Batch Size (Max is typically 2000 per single query)
+    BATCH_SIZE = 2000
+    
+    current_until = end_time
+    
+    # Base Query Template
+    base_where = "priority != 'warning'" if exclude_warnings else "true"
+    
+    while len(all_incidents) < limit:
+        
+        # Calculate how many we still need
+        remaining = limit - len(all_incidents)
+        fetch_size = min(remaining, BATCH_SIZE)
+        
+        nrql = (
+            f"SELECT * FROM NrAiIncident "
+            f"WHERE {base_where} "
+            f"SINCE '{start_time}' UNTIL '{current_until}' "
+            f"LIMIT {fetch_size}"
+        )
+        
+        query_payload = """
+        query ($accountId: Int!, $nrqlQuery: Nrql!) {
+          actor {
+            account(id: $accountId) {
+              nrql(query: $nrqlQuery) {
+                results
+              }
+            }
+          }
+        }
+        """
+        
+        variables = {
+            "accountId": int(account_id),
+            "nrqlQuery": nrql
+        }
+        
+        payload = {"query": query_payload, "variables": variables}
+        
+        print(f"    ...Fetching batch (Size: {fetch_size}) UNTIL {current_until}...")
+        data = run_graphql_query(api_key, payload)
+        
+        if not data:
+            break
+            
+        # Parse Results
+        try:
+            # Check for explicit GraphQL errors first
+            if 'errors' in data:
+                print(f"\n    GraphQL Error in response: {json.dumps(data['errors'], indent=2)}")
+                break
+                
+            # Safe traversal
+            actor = data.get('data', {}).get('actor')
+            if not actor:
+                print(f"\n    Error: 'actor' field is missing or null. Data: {data}")
+                break
+                
+            account = actor.get('account')
+            if not account:
+                print(f"\n    Error: 'account' field is missing or null (check Account ID). Data: {data}")
+                break
+                
+            nrql_res = account.get('nrql')
+            if not nrql_res:
+                print(f"\n    Error: 'nrql' field is missing or null. Data: {data}")
+                break
+                
+            results = nrql_res.get('results')
+            
+        except (KeyError, TypeError, AttributeError) as e:
+            print(f"\n    Unexpected response structure exception: {e}")
+            print(f"    Response data dump: {json.dumps(data, indent=2)}")
+            break
+            
+        if not results:
+            print("    ...No more results found in this window.")
+            break
+            
+        # Add to master list
+        all_incidents.extend(results)
+        count_so_far = len(all_incidents)
+        print(f"    ...Batch received. Total fetched: {count_so_far}")
+        
+        # Paging Logic
+        if len(results) < fetch_size:
+            break
+            
+        if count_so_far >= limit:
+            break
+            
+        # Prepare for next page:
+        # Get the timestamp of the LAST item in this batch.
+        last_item = results[-1]
+        last_timestamp = last_item.get('timestamp')
+        
+        if last_timestamp:
+            # FIX: Convert epoch ms back to 'YYYY-MM-DD HH:MM:SS' string
+            # New Relic returns timestamp in epoch milliseconds
+            try:
+                dt_obj = datetime.fromtimestamp(last_timestamp / 1000.0)
+                current_until = dt_obj.strftime('%Y-%m-%d %H:%M:%S')
+            except Exception as e:
+                print(f"    Warning: Failed to convert timestamp {last_timestamp}: {e}")
+                break
+        else:
+            print("    Warning: No timestamp found in records, cannot paginate further.")
+            break
+            
+    return all_incidents
 
 # --- Analysis Functions ---
 
@@ -140,7 +206,9 @@ def analyze_temporal(df):
     # Ensure timestamp is datetime
     if 'timestamp' in df.columns:
         # NR timestamps are often in milliseconds
-        df['dt'] = pd.to_datetime(df['timestamp'], unit='ms')
+        # Convert to numeric first to handle potential string formatting issues
+        df['timestamp_num'] = pd.to_numeric(df['timestamp'], errors='coerce')
+        df['dt'] = pd.to_datetime(df['timestamp_num'], unit='ms')
     else:
         print("Timestamp column missing. Skipping temporal analysis.")
         return ""
@@ -400,6 +468,10 @@ def main():
     # Filtering Options
     parser.add_argument("--include_warnings", action="store_true",
                         help="Include warning incidents (Default is to exclude them).")
+    
+    # Limit Options
+    parser.add_argument("--limit", type=int, default=10000,
+                        help="Max incidents to fetch (Default: 10000).")
 
     # Gemini Flags
     parser.add_argument("--analyze_with_gemini", action="store_true", 
@@ -427,7 +499,7 @@ def main():
 
     # 1. Fetch Data
     print_header("Data Fetching")
-    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time, exclude_warnings)
+    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time, exclude_warnings, args.limit)
     
     if not results:
         print("No data found or API error.")
