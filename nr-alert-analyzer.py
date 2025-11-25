@@ -14,6 +14,7 @@ Dependencies:
 
 Usage:
     python nr-alert-analyzer.py --api_key "NRAK-..." --account_id 12345
+    python nr-alert-analyzer.py ... --exclude_warnings
     python nr-alert-analyzer.py ... --show_top_n 20
     python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_api_key "..."
     
@@ -41,14 +42,20 @@ def print_header(title):
 
 # --- GraphQL Functions ---
 
-def build_nrql_query(account_id, start_time, end_time):
+def build_nrql_query(account_id, start_time, end_time, exclude_warnings=False):
     """
     Constructs the GraphQL payload to fetch NrAiIncident data via NRQL.
     """
+    # Base query
+    base_query = "SELECT * FROM NrAiIncident"
+    
+    # Add filter if exclude_warnings is True
+    if exclude_warnings:
+        base_query += " WHERE priority != 'warning'"
+        
     # Note: LIMIT 2000 is the standard max for NRQL. 
-    # For production use on massive datasets, you might need time-window partitioning.
     nrql = (
-        f"SELECT * FROM NrAiIncident "
+        f"{base_query} "
         f"SINCE '{start_time}' UNTIL '{end_time}' "
         f"LIMIT 2000"
     )
@@ -74,19 +81,21 @@ def build_nrql_query(account_id, start_time, end_time):
     
     return {"query": query, "variables": variables}
 
-def fetch_incidents(api_key, account_id, start_time, end_time):
+def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=False):
     """
     Executes the GraphQL request to New Relic.
     """
     print(f"  Fetching incidents from Account {account_id}...")
     print(f"  Window: {start_time} to {end_time}")
+    if exclude_warnings:
+        print("  Filter: Excluding 'warning' priority incidents.")
     
     headers = {
         "Content-Type": "application/json",
         "API-Key": api_key
     }
     
-    payload = build_nrql_query(account_id, start_time, end_time)
+    payload = build_nrql_query(account_id, start_time, end_time, exclude_warnings)
     
     try:
         response = requests.post(NEW_RELIC_GRAPHQL_URL, json=payload, headers=headers)
@@ -382,6 +391,10 @@ def main():
     # Reporting Options
     parser.add_argument("--show_top_n", type=int, default=10,
                         help="Number of top items to show for conditions and entities (10-100). Default: 10.")
+    
+    # Filtering Options
+    parser.add_argument("--exclude_warnings", action="store_true",
+                        help="Exclude warning incidents (Priority = 'warning').")
 
     # Gemini Flags
     parser.add_argument("--analyze_with_gemini", action="store_true", 
@@ -406,7 +419,7 @@ def main():
 
     # 1. Fetch Data
     print_header("Data Fetching")
-    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time)
+    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time, args.exclude_warnings)
     
     if not results:
         print("No data found or API error.")
