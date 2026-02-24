@@ -12,14 +12,14 @@ optional Gemini integration for natural language SRE insights.
 Dependencies:
     pip install pandas requests
 
-Usage:
+ -:
     python nr-alert-analyzer.py --api_key "NRAK-..." --account_id 12345
     
     # By default, WARNINGs are excluded. To include them:
     python nr-alert-analyzer.py ... --include_warnings
     
-    # Adjust the fetch limit (Default: 10000)
-    python nr-alert-analyzer.py ... --limit 5000
+    # Adjust the fetch limit (Default: 100000)
+    python nr-alert-analyzer.py ... --limit 100000
     
     python nr-alert-analyzer.py ... --show_top_n 20
     python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_api_key "..."
@@ -35,6 +35,8 @@ import json
 import time
 from datetime import datetime, timedelta
 import textwrap
+import io
+import contextlib
 
 # --- Configuration & Constants ---
 NEW_RELIC_GRAPHQL_URL = "https://api.newrelic.com/graphql"
@@ -45,6 +47,99 @@ def print_header(title):
     print("\n" + ("-" * 60))
     print(f"### {title.upper()} ###")
     print(("-" * 60) + "\n")
+
+
+# --- Interactive API Key Selection ---
+
+def load_api_keys_from_config():
+    """
+    Loads API keys from a 'config.json' file in the same directory.
+    The file should have a structure like:
+    {
+      "api_keys": {
+        "key_name_1": "NRAK-...",
+        "key_name_2": "NRAK-..."
+      }
+    }
+    """
+    try:
+        with open("config.json", "r") as f:
+            config = json.load(f)
+            return config.get("api_keys", {})
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        print("Warning: 'config.json' is not a valid JSON file.")
+        return {}
+
+def select_api_key_interactively(api_keys):
+    """
+    Prompts the user to select an API key from a list.
+    """
+    if not api_keys:
+        return None
+
+    print("\nPlease select an API key to use:")
+    key_names = list(api_keys.keys())
+    for i, name in enumerate(key_names):
+        print(f"  {i + 1}. {name}")
+
+    while True:
+        try:
+            choice = input(f"\nEnter a number (1-{len(key_names)}): ")
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(key_names):
+                selected_key_name = key_names[choice_idx]
+                return api_keys[selected_key_name]
+            else:
+                print("Invalid choice. Please enter a number from the list.")
+        except (ValueError, IndexError):
+            print("Invalid input. Please enter a number.")
+
+
+def list_accounts(api_key):
+    """
+    Fetches and lists all accounts accessible by the given API key.
+    """
+    print_header("Fetching Accessible Accounts")
+    
+    query = """
+    {
+      actor {
+        accounts {
+          id
+          name
+        }
+      }
+    }
+    """
+    
+    payload = {"query": query}
+    data = run_graphql_query(api_key, payload)
+    
+    if not data:
+        print("Failed to fetch accounts.")
+        return
+        
+    try:
+        if 'errors' in data:
+            print(f"GraphQL Error: {json.dumps(data['errors'], indent=2)}")
+            return
+            
+        accounts = data.get('data', {}).get('actor', {}).get('accounts', [])
+        
+        if not accounts:
+            print("No accounts found for this API key.")
+            return
+            
+        print("**Available Accounts:**")
+        for acc in accounts:
+            print(f"  - Name: {acc['name']}, ID: {acc['id']}")
+            
+    except (KeyError, TypeError, AttributeError) as e:
+        print(f"Unexpected response structure: {e}")
+        print(f"Response data dump: {json.dumps(data, indent=2)}")
+
 
 # --- GraphQL Functions ---
 
@@ -447,22 +542,23 @@ def call_gemini(summary_text, api_key):
 def main():
     parser = argparse.ArgumentParser(description="New Relic Alert Analyzer")
     
-    # Required/Core Arguments
-    parser.add_argument("--api_key", required=True, help="New Relic User API Key (NRAK-...)")
-    parser.add_argument("--account_id", required=True, help="New Relic Account ID")
+    # Core Arguments
+    parser.add_argument("--api_key", help="New Relic User API Key (NRAK-...). If not provided, an interactive selector will be shown.")
+    parser.add_argument("--account_id", help="New Relic Account ID. Required unless --list-accounts is used.")
+    parser.add_argument("--list-accounts", action="store_true", help="List all accessible account IDs and exit.")
     
     # Time Window (Optional)
-    # Defaults to 7 days ago -> Now
+    # Defaults to 1 month ago -> Now
     default_end = datetime.utcnow()
-    default_start = default_end - timedelta(days=7)
+    default_start = default_end - timedelta(days=30)
     
     parser.add_argument("--start_time", default=default_start.strftime("%Y-%m-%d %H:%M:%S"),
-                        help="Start time (YYYY-MM-DD HH:MM:SS). Default: 7 days ago.")
+                        help="Start time (YYYY-MM-DD HH:MM:SS). Default: 1 month ago.")
     parser.add_argument("--end_time", default=default_end.strftime("%Y-%m-%d %H:%M:%S"),
-                        help="End time (YYYY-MM-DD HH:MM:SS). Default: Now.")
+                        help="End time (YYYY-MM-DD HH:M:SS). Default: Now.")
 
     # Reporting Options
-    parser.add_argument("--show_top_n", type=int, default=10,
+    parser.add_argument("--show_top_n", type=int, default=100,
                         help="Number of top items to show for conditions and entities (10-100). Default: 10.")
     
     # Filtering Options
@@ -470,8 +566,8 @@ def main():
                         help="Include warning incidents (Default is to exclude them).")
     
     # Limit Options
-    parser.add_argument("--limit", type=int, default=10000,
-                        help="Max incidents to fetch (Default: 10000).")
+    parser.add_argument("--limit", type=int, default=100000,
+                        help="Max incidents to fetch (Default: 100000).")
 
     # Gemini Flags
     parser.add_argument("--analyze_with_gemini", action="store_true", 
@@ -483,6 +579,40 @@ def main():
                         help="If set, only sends the statistical summary to Gemini (excludes the full raw data dump).")
 
     args = parser.parse_args()
+
+    # --- API Key Logic ---
+    api_key = args.api_key
+    if not api_key:
+        api_keys = load_api_keys_from_config()
+        if not api_keys:
+            print("Error: No API key provided via --api_key and no keys found in 'config.json'.")
+            print("Please create 'config.json' in this directory with the following format:")
+            print(textwrap.dedent("""
+                {
+                  "api_keys": {
+                    "My Personal Key": "NRAK-...",
+                    "Work Staging": "NRAK-..."
+                  }
+                }
+            """))
+            return
+        
+        selected_key = select_api_key_interactively(api_keys)
+        if not selected_key:
+            print("No key selected. Exiting.")
+            return
+        api_key = selected_key
+
+    # --- List Accounts Logic ---
+    if args.list_accounts:
+        list_accounts(api_key)
+        return
+
+    # --- Account ID Validation ---
+    if not args.account_id:
+        print("Error: --account_id is required for analysis.")
+        print("You can use the --list_accounts flag to find available account IDs.")
+        return
 
     # validate gemini key if flag is present
     if args.analyze_with_gemini and not args.gemini_api_key:
@@ -499,7 +629,7 @@ def main():
 
     # 1. Fetch Data
     print_header("Data Fetching")
-    results = fetch_incidents(args.api_key, args.account_id, args.start_time, args.end_time, exclude_warnings, args.limit)
+    results = fetch_incidents(api_key, args.account_id, args.start_time, args.end_time, exclude_warnings, args.limit)
     
     if not results:
         print("No data found or API error.")
@@ -513,11 +643,29 @@ def main():
     if total_events == 0:
         return
 
-    # 3. Run Analysis
-    temp_sum = analyze_temporal(df)
-    sev_sum = analyze_severity(df)
-    root_sum = analyze_root_cause(df, args.show_top_n)
-    ent_sum = analyze_entities(df, args.show_top_n)
+    # --- Generate incidents.csv ---
+    df['accountId'] = args.account_id
+    df.to_csv("incidents.csv", index=False)
+    print(f"  Incidents data saved to incidents.csv")
+
+    # --- Generate incident_summary.txt ---
+    summary_io = io.StringIO()
+    with contextlib.redirect_stdout(summary_io):
+        # 3. Run Analysis
+        temp_sum = analyze_temporal(df)
+        sev_sum = analyze_severity(df)
+        root_sum = analyze_root_cause(df, args.show_top_n)
+        ent_sum = analyze_entities(df, args.show_top_n)
+    
+    summary_content = summary_io.getvalue()
+    
+    # Print summary to console
+    print(summary_content)
+    
+    # Write summary to file
+    with open("incident_summary.txt", "w") as f:
+        f.write(summary_content)
+    print(f"\n  Analysis summary saved to incident_summary.txt")
 
     # 4. Gemini Integration
     if args.analyze_with_gemini:
