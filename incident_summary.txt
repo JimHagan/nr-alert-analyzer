@@ -1,0 +1,544 @@
+
+------------------------------------------------------------
+### TEMPORAL ANALYSIS ###
+------------------------------------------------------------
+
+**Incidents by Day:**
+  2026-02-01: 2000
+  2026-02-02: 8000
+  2026-02-03: 8000
+  2026-02-04: 10000
+  2026-02-05: 8000
+  2026-02-06: 10000
+  2026-02-07: 8000
+  2026-02-08: 8000
+  2026-02-09: 8000
+  2026-02-10: 10000
+  2026-02-11: 8000
+  2026-02-12: 8000
+  2026-02-13: 9897
+  2026-02-14: 8103
+  2026-02-15: 8000
+  2026-02-16: 8000
+  2026-02-17: 8000
+  2026-02-18: 10000
+  2026-02-19: 8000
+  2026-02-20: 10000
+  2026-02-21: 8000
+  2026-02-22: 8000
+  2026-02-23: 10000
+  2026-02-24: 8000
+
+------------------------------------------------------------
+### SEVERITY ANALYSIS ###
+------------------------------------------------------------
+
+  * critical: 200000 (100.0%)
+
+------------------------------------------------------------
+### SOURCE / ROOT CAUSE ANALYSIS ###
+------------------------------------------------------------
+
+  382. [32676] critical | Policy: '[BEES] - [PROD] - BEES Vision - BEES Vision - Service - High Metrics Policy - C04BGHJFV1V - SEV3' -> Condition: '[PROD] High number of Messages in DLQ'
+  379. [31699] critical | Policy: '[BEES] - [PROD] - BEES Vision - BEES Vision - Enricher - High Metrics Policy - C04BGHJFV1V - SEV3' -> Condition: '[PROD] High number of Messages in DLQ'
+  378. [30472] critical | Policy: '[BEES] - [PROD] - BEES Vision - BEES Vision - Delivery - High Metrics Policy - C04BGHJFV1V - SEV3' -> Condition: '[PROD] High number of Messages in DLQ'
+  377. [29099] critical | Policy: '[BEES] - [PROD] - BEES Vision - BEES Vision - Configuration - High Metrics Policy - C04BGHJFV1V - SEV3' -> Condition: '[PROD] High number of Messages in DLQ'
+  380. [28374] critical | Policy: '[BEES] - [PROD] - BEES Vision - BEES Vision - High Metrics Policy - C04BGHJFV1V - SEV3' -> Condition: '[PROD] High number of Messages in DLQ'
+  381. [26511] critical | Policy: '[BEES] - [PROD] - BEES Vision - BEES Vision - Rules Matcher - High Metrics Policy - C04BGHJFV1V - SEV3' -> Condition: '[PROD] High number of Messages in DLQ'
+  403. [3524] critical | Policy: '[BEES] - [PROD] - Core Services - Digital Communication relay Alerts - C06E1NQFS0L - SEV3' -> Condition: '[PROD][digital-communication-relay][SEV3] Response Time High > 500ms over 5 minutes'
+  400. [2699] critical | Policy: '[BEES] - [PROD] - Cloudops | DATABASE - CosmosDB US -  SEV2 - C05PA7S5AEM - SEV2' -> Condition: 'Percentual Rate'
+  353. [896] critical | Policy: '[BEES] - US Adapter - Services Policy - 1f57af55-0bba-45e1-9558-371769ddb39c - SEV2' -> Condition: '[PROD] Feedback Layer Failed requests'
+  122. [722] critical | Policy: '[BEES] - Cloud Database - [BEES] - Cloud Database - CosmosDB Monitoring Alerts - C09AWB0UHPG - Warning - f00d6d00-9beb-4a9a-b9db-57af268e3151 - SEV2' -> Condition: '[PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning'
+  229. [572] critical | Policy: '[BEES] - Orders - [Order Consumer] Messages on Internal DLQ Queue (B2B) - f624deff-846e-433f-966c-fa0163c91822 - SEV3' -> Condition: '[Order Consumer V3] Messages on Internal DLQ Queue (B2B)'
+  126. [482] critical | Policy: '[BEES] - Cloud Database - [BEES] - Cloud Database - CosmosDB Monitoring Alerts - C09AWB0UHPG - Warning - f00d6d00-9beb-4a9a-b9db-57af268e3151 - SEV2' -> Condition: '[PROD][CosmosDB] RU Throughput on MAX Usage - Warning'
+  406. [413] critical | Policy: '[BEES] - [PROD] - Core Services - SMS service basic alerts - C06E1NQFS0L - SEV3' -> Condition: '[PROD][SMS Service][SEV3] Error (40x) Percentage > 25% over 10 minutes'
+  125. [371] critical | Policy: '[BEES] - Cloud Database - [BEES] - Cloud Database - CosmosDB Monitoring Alerts - C09AWB0UHPG - Warning - f00d6d00-9beb-4a9a-b9db-57af268e3151 - SEV2' -> Condition: '[PROD][CosmosDB] High Server Side Latency Gateway - Warning'
+  438. [364] critical | Policy: '[BEES] - [PROD] - Orders - platform-orders-command-api-prod - Response time, memory and cpu usage - C06AZV8ARBM - SEV3' -> Condition: 'High HTTP Response Time'
+  89. [303] critical | Policy: '[BEES] - BEES-CARE - GENERAL Alerts - C01LN2DNTF0 - SEV3' -> Condition: '[PROD] 'BEES-CARE' High Error Rate (Transactions Batch) SEV3'
+  167. [301] critical | Policy: '[BEES] - Data Tiers - [Platform][DTP][PROD][Combo API] SEV3 Alerts - C08KBJVBT1S - SEV3' -> Condition: '[Platform][DTP][PROD][Combo API][SEV3] Queue duration > 500ms over 10 minutes'
+  274. [296] critical | Policy: '[BEES] - Product Availability - [prod] Product Assortment Service Pods Not Ready SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: '[prod] Product Assortment Service Pods Not Ready'
+  58. [291] critical | Policy: '[BEES] - BEES Force Orders - BEES Force Order Taking BFF - GET v1/orders - Response Time - C09820EK66P - SEV3' -> Condition: 'GET v1/orders - US Cluster - Response Time - SEV3'
+  118. [289] critical | Policy: '[BEES] - Cart BE - Cart Service - Severity 2 Alerts - 35991c50-653c-495b-b9c3-7d093ab01b4c - SEV2' -> Condition: '[PROD] cart-service Success Rate SEV2'
+  401. [264] critical | Policy: '[BEES] - [PROD] - Cloudops | DATABASE - CosmosDB US -  SEV2 - C05PA7S5AEM - SEV2' -> Condition: 'Server side latency'
+  15. [246] critical | Policy: '[BEES] - AdTech - [PROD][ADS-INTEGRATION-SERVICE][HIGH-LATENCY-COUNTRY][TEMP] - C03V45AQQJH - SEV3' -> Condition: '[PROD][ADS-INTEGRATION-SERVICE][HIGH-LATENCY-COUNTRY][TEMP]'
+  466. [221] critical | Policy: '[BEES] - [PROD] - Sales Drivers 4 - [audience management csv consumer] High CPU Usage Percentage - C08EZ23QA07 - SEV3' -> Condition: 'High CPU Usage Percentage'
+  182. [210] critical | Policy: '[BEES] - Framework & Core 1 - [PROD] BEES Hub Approval Service - All SEV3 Alerts - 8e822387-15b3-4035-ae6e-36514c6b53af - SEV3' -> Condition: 'POD with High CPU usage'
+  232. [204] critical | Policy: '[BEES] - Orders - [Order Service] High HTTP Response Time - POST SEV3 - f624deff-846e-433f-9666c-fa0163c91822 - SEV3' -> Condition: '[Order Service] High HTTP Response Time - POST SEV3'
+  155. [201] critical | Policy: '[BEES] - Company_Store_Mgmt_1 - High Response Time - Product Taxonomy Service - 0d569c74-5765-47df-bfa8-8ca0d702b558 - SEV3' -> Condition: '[PROD][Product Taxonomy Service] High Response Time | SEV3'
+  110. [197] critical | Policy: '[BEES] - CT_Collection - [PROD][credit-service-consumer] Errors Ocurred - d414f983-91b5-46bd-a7d8-1e7b7043031b - SEV3' -> Condition: 'More than 10 errors occurred in 1 minute (CONSUMER)'
+  184. [188] critical | Policy: '[BEES] - Framework & Core 1 - [PROD] BEES Hub Approval Service Relay - All SEV3 Alerts - 8e822387-15b3-4035-ae6e-36514c6b53af - SEV3' -> Condition: 'POD with High CPU usage'
+  133. [170] critical | Policy: '[BEES] - Company & Store Management 3 - [cms-app] Customer/partner public endpoint response time warning - 0d569c74-5765-47df-bfa8-8ca0d702b558 - SEV2' -> Condition: '[WARNING] High transaction duration detected on the public endpoint'
+  266. [166] critical | Policy: '[BEES] - Product Availability - [prod] Inventory - POD with High CPU usage SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: '[prod] Inventory - POD with High CPU usage'
+  60. [156] critical | Policy: '[BEES] - BEES Force Orders - BEES Force Order Taking BFF - Response Time - C09820EK66P - SEV3' -> Condition: 'Response Time - SEV3'
+  389. [137] critical | Policy: '[BEES] - [PROD] - BF6 - Frontline Data Feature Service - Basic health policy - C06K26GQP6F - SEV2' -> Condition: 'High CPU Usage Percentage'
+  16. [136] critical | Policy: '[BEES] - AdTech - [PROD][ADS-INTEGRATION-SERVICE][MAX-PODS][TEMP] - C03V45AQQJH - SEV3' -> Condition: '[PROD][ADS-INTEGRATION-SERVICE][MAX-PODS][TEMP]'
+  360. [135] critical | Policy: '[BEES] - [CT_Onboarding] - [BEES] - Credit Onboarding Service API - Digital Communication Integration Failure - d414f983-91b5-46bd-a7d8-1e7b7043031b - SEV3' -> Condition: 'Digital Communication Integration Error'
+  481. [132] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV1' -> Condition: 'Duration 99% < 520ms 99.000 Burn Rate'
+  261. [129] critical | Policy: '[BEES] - Product Availability - Enforcement Service Pods Not Ready SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: 'Enforcement Service Pods Not Ready'
+  13. [126] critical | Policy: 'Mobile Performance' -> Condition: 'High Network Usage'
+  292. [121] critical | Policy: '[BEES] - Rewards - [BEES] - Rewards Challenges Consumer Too Many Messages DLQs SEV3 - 370dbc40-1761-42f9-821a-0793febd7d25 - SEV3' -> Condition: 'DLQ > 1 for 60 minutes'
+  442. [114] critical | Policy: '[BEES] - [PROD] - Orders - platform-orders-order-consumer-prod - Pods and errors - C06AZV8ARBM - SEV2' -> Condition: 'High Error Rate Percentage'
+  407. [110] critical | Policy: '[BEES] - [PROD] - Core Services - SMS service basic alerts - C06E1NQFS0L - SEV3' -> Condition: '[PROD][SMS Service][SEV3] Sms Service endpoint response time > 800ms over 10 minutes'
+  590. [104] critical | Policy: '[SRE] [GLOBAL-PROD] New Relic Agent Version' -> Condition: '[GLOBAL-PROD] APM with old New Relic Agent version'
+  315. [104] critical | Policy: '[BEES] - SRE Observability - [GLOBAL-PROD] APM with old New Relic Agent version - 779edd80-10e2-4a55-8455-506411592a59 - SEV3' -> Condition: '[GLOBAL-PROD] APM with old New Relic Agent version'
+  303. [103] critical | Policy: '[BEES] - Rewards - [BEES] - Rewards Redemption Business - Confirmation - High Error Percentage SEV3 - 370dbc40-1761-42f9-821a-0793febd7d25 - SEV3' -> Condition: 'Error Percentage > 0 % for 15 minutes'
+  395. [101] critical | Policy: '[BEES] - [PROD] - CT_Buy-Now-Pay-Later - [credit-assessment-accounts-consumer] Pod Restart, error percentage and response time - C06B74GNMUK - SEV3' -> Condition: 'High Error Rate Percentage'
+  301. [98] critical | Policy: '[BEES] - Rewards - [BEES] - Rewards Redemption Business - Authorization - High Error Percentage SEV3 - 370dbc40-1761-42f9-821a-0793febd7d25 - SEV3' -> Condition: 'Error Percentage > 0% for 15 minutes'
+  41. [91] critical | Policy: '[BEES] - BEES Connector - [PROD] Data Adapter Service - Connector INTERNAL Integration Error - DO - Chavon - c1f980f5-044c-42c7-89ef-b8dcfd16db6c - SEV2' -> Condition: '[PROD] - Data Adapter Service - Connector INTERNAL Integration Error - DO - Chavon'
+  145. [86] critical | Policy: '[BEES] - Company - [BEES] - BF6 - Basic health policy - C0251UJTJU9 - SEV2 - 22c4f91a-8bbc-482b-a2c4-6f444acd6d18 - SEV2' -> Condition: 'High Error Rate Percentage'
+  66. [85] critical | Policy: '[BEES] - BEES Force Orders - Bees Force Sync Consumer - Response Time - C09820EK66P - SEV3' -> Condition: 'Response Time - SEV3'
+  54. [83] critical | Policy: '[BEES] - BEES Force Orders - BEES Force Catalog Consumer - Response Time - C09820EK66P - SEV3' -> Condition: 'Response Time - SEV3'
+  336. [81] critical | Policy: '[BEES] - Search BE - prod - [PROD][SEARCH-MANAGER-INDEXER][CPU-USAGE][READY] CPU High Usage - a83961f1-f57f-4f3c-998b-d5e6cb780780 - SEV3' -> Condition: 'cpu usage'
+  446. [80] critical | Policy: '[BEES] - [PROD] - Recruitment Journey - [BEES] - Recruitment Journey BFF High Error Percentage SEV2 - C08STCF73LY - SEV2' -> Condition: 'Error Percentage > 1% for 5 minutes'
+  404. [80] critical | Policy: '[BEES] - [PROD] - Core Services - PROD File Management Service API Alerts - C06E1NQFS0L - SEV3' -> Condition: '[PROD][file-management-api][SEV3] Response time > 800ms over 15 minutes'
+  391. [78] critical | Policy: '[BEES] - [PROD] - BF6 - Frontline Metadata Configuration - Basic health policy - C06K26GQP6F - SEV2' -> Condition: 'High Error Rate Percentage'
+  465. [78] critical | Policy: '[BEES] - [PROD] - SRE Link - [PROD] LINK VENDORS BFF - Transaction errors - C03NY7K1AAU - SEV3' -> Condition: '[PROD] [link vendors bff] High value of transaction errors'
+  17. [76] critical | Policy: '[BEES] - AdTech - [PROD][ADS-INTEGRATION-SERVICE][SPIKE-LATENCY-COUNTRY][TEMP] - C03V45AQQJH - SEV3' -> Condition: '[PROD][ADS-INTEGRATION-SERVICE][SPIKE-LATENCY-COUNTRY][TEMP]'
+  259. [76] critical | Policy: '[BEES] - Product Availability - Enforcement Service CPU Usage SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: 'Enforcement Service - POD with High CPU usage'
+  485. [76] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV2' -> Condition: 'Duration 99% < 520ms 99.000 Burn Rate'
+  231. [74] critical | Policy: '[BEES] - Orders - [Order Service] High HTTP Response Time - GET SEV3 - f624deff-846e-433f-9666c-fa0163c91822 - SEV3' -> Condition: '[Order Service] High HTTP Response Time - GET SEV3'
+  271. [74] critical | Policy: '[BEES] - Product Availability - [prod] Inventory Service Pods Not Ready SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: '[prod] Inventory Service Pods Not Ready'
+  199. [74] critical | Policy: '[BEES] - Global Pricing Engine - [PROD][Pricing Engine] SEV2 Alerts - 3b0171fe-1b91-48b2-8a20-170b14583520 - SEV2' -> Condition: '[PROD][Pricing Engine][SEV2] Error Percentage > 2% over 5 minutes'
+  367. [70] critical | Policy: '[BEES] - [Fintech] - [FINTECH] Payment Rules - Payment Seller Service - High CPU and Memory Usage SEV3 - groupId=f688a0ac-f461-4d11-ac34-3a856d7cba84 - SEV3' -> Condition: 'High Memory Usage Percentage'
+  356. [69] critical | Policy: '[BEES] - US Adapter - Services Policy - 1f57af55-0bba-45e1-9558-371769ddb39c - SEV2' -> Condition: '[PROD] new  Categories created'
+  288. [68] critical | Policy: '[BEES] - Rewards - [BEES] - Rewards Accounts Matching Service Too Many Messages DLQ SEV3 - 370dbc40-1761-42f9-821a-0793febd7d25 - SEV3' -> Condition: 'DLQ > 1 for 60 minutes'
+  111. [66] critical | Policy: '[BEES] - CT_Collection - [PROD][credit-service-relay] Errors Ocurred - d414f983-91b5-46bd-a7d8-1e7b7043031b - SEV3' -> Condition: 'More than 10 errors occurred in 1 minute (RELAY)'
+  192. [65] critical | Policy: '[BEES] - Fulfillment 2 - [PROD] ATP Order Consumer Service - Dead letter - adc32438-9084-4ddc-a0e2-8ebb2f8790fa - SEV3' -> Condition: '[PROD][ATP Order Consumer Service] Dead letter - SEV3'
+  584. [60] critical | Policy: '[PROD][No Team Name] Monitoring SPN used by New Relic' -> Condition: '[No Team Name] Monitoring SPN used by New Relic'
+  255. [58] critical | Policy: '[BEES] - Payment Activation - [PROD] Payment Method Service - High CPU Usage - f688a0ac-f461-4d11-ac34-3a856d7cba84 - SEV3' -> Condition: 'High CPU Usage Percentage'
+  263. [57] critical | Policy: '[BEES] - Product Availability - [prod] Enforcement Consumer High Error Rate Percentage - SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: 'Enforcement Consumer High Error Rate Percentage'
+  173. [56] critical | Policy: '[BEES] - Data Tiers - [Platform][DTP][PROD][Deal Consumer] SEV3 Alerts - 3b0171fe-1b91-48b2-8a20-170b14583520 - SEV3' -> Condition: '[Platform][DTP][PROD][Deal Consumer][SEV3] RabbitMQ Slow Ingestion (ack rate < 15/s)'
+  394. [54] critical | Policy: '[BEES] - [PROD] - BF6 - [BEES] - BF6 - Basic health policy - C0251UJTJU9 - SEV2 - C0251UJTJU9 - SEV2' -> Condition: 'High Error Rate Percentage'
+  286. [53] critical | Policy: '[BEES] - Product Page BE - [PROD][COMPILATION-PRODUCT-ASSORTMENT-CONSUMER][LOG-ERROR-RATE][TEMP] Log error rate - c2b34027-b91c-444c-b05a-f9c60bb209bc - SEV2' -> Condition: 'Log error rate'
+  489. [53] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV3' -> Condition: 'Duration 99% < 520ms 99.000 Burn Rate'
+  284. [48] critical | Policy: '[BEES] - Product Page BE - [PROD][COMPILATION-CATEGORY-CONSUMER][QUEUE-MESSAGES][TEMP]Category Consumer Queue Messages - c2b34027-b91c-444c-b05a-f9c60bb209bc - SEV3' -> Condition: '[PROD] Compilation Category Consumer - Queue Messages'
+  323. [45] critical | Policy: '[BEES] - Sales Drivers Ext 1 - [approval consumer queues] PROD queues with messages available - 0d569c74-5765-47df-bfa8-8ca0d702b558 - SEV2' -> Condition: '[sync-sku-cpp] GB/EU DLQ Sync SKU CPP - Messages Available'
+  5. [45] critical | Policy: 'Alert Standard deviation' -> Condition: 'Mobile Standard Deviation - Login (Endpoint: accounts/v2/)'
+  402. [44] critical | Policy: '[BEES] - [PROD] - Cloudops | DATABASE - CosmosDB US -  SEV2 - C05PA7S5AEM - SEV2' -> Condition: 'Service Availability'
+  341. [42] critical | Policy: '[BEES] - Search BE - prod - [PROD][SEARCH-MANAGER-INDEXER][RESTART][READY] Pod Restarts - a83961f1-f57f-4f3c-998b-d5e6cb780780 - SEV3' -> Condition: 'pod restarts'
+  1. [42] critical | Policy: 'Alert Coverage Gaps ' -> Condition: 'App launches'
+  4. [42] critical | Policy: 'Alert Standard deviation' -> Condition: 'Mobile Standard Deviation - Login (Endpoint: B2C_1A_SigninMobile)'
+  482. [41] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV1' -> Condition: 'Duration 99% < 90ms 99.000 Burn Rate'
+  487. [41] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV3' -> Condition: 'Availability 99.900 Burn Rate'
+  176. [39] critical | Policy: '[BEES] - Data Tiers - [Platform][DTP][PROD][Deal Service] SEV3 Alerts - 3b0171fe-1b91-48b2-8a20-170b14583520 - SEV3' -> Condition: '[Platform][DTP][PROD][Deal Service][SEV3] Queue duration > 500ms over 10 minutes'
+  260. [39] critical | Policy: '[BEES] - Product Availability - Enforcement Service High Failed Consumption Result SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: 'Enforcement Service - FAILED Consumption Result'
+  586. [38] critical | Policy: '[SRE] Argo Rollout - Controller Alerts' -> Condition: '[Argo Rollouts - Controller] Error Rate [LOG TABLE] '
+  69. [37] critical | Policy: '[BEES] - BEES Force SEV3' -> Condition: '[PROD] High HTTP Response Time'
+  536. [36] critical | Policy: '[BEES][SRE] - Force Mobile Response Time Golden Path' -> Condition: '[BEES Force] Response Time - Tasks - Coverage '
+  483. [35] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV2' -> Condition: 'Availability 99.900 Burn Rate'
+  119. [35] critical | Policy: '[BEES] - Cart BE - Cart Service - Severity 2 Alerts - 35991c50-653c-495b-b9c3-7d093ab01b4c - SEV2' -> Condition: '[TEST-PROD] cart-service Success Rate SEV2'
+  38. [35] critical | Policy: '[BEES] - BEES Connector - [PROD] Data Adapter Service - Connector EXTERNAL Integration Error - BR - L'Oreal (Panpharma) - c1f980f5-044c-42c7-89ef-b8dcfd16db6c - SEV2' -> Condition: '[PROD] - Data Adapter Service - Connector EXTERNAL Integration Error - BR - L'Oreal (Panpharma)'
+  435. [34] critical | Policy: '[BEES] - [PROD] - Operation Excellence - [PROD] Critical Dashboard Performance Overview - C06JYD7K5BP - SEV1' -> Condition: '[PROD] Login Percentage Below 90% - SEV1'
+  272. [34] critical | Policy: '[BEES] - Product Availability - [prod] Product Assortment Consumer Pods Not Ready SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: '[prod] Product Assortment Consumer Pods Not Ready'
+  441. [32] critical | Policy: '[BEES] - [PROD] - Orders - platform-orders-order-consumer-prod - Memory and cpu utilization - C06AZV8ARBM - SEV3' -> Condition: 'High Memory Usage Percentage'
+  434. [32] critical | Policy: '[BEES] - [PROD] - Operation Excellence - [PROD] Critical Dashboard Performance Overview - C06JYD7K5BP - SEV1' -> Condition: '[PROD] Checkout Percentage Below 90% - SEV1'
+  276. [32] critical | Policy: '[BEES] - Product Foundations - [prod] Item Service - for Endpoint: GET_ITEMS_MARKET_PLACE - Slow response time - SEV3 - a9c9093d-697b-4e7c-bf74-f0c47b3ed556 - SEV3' -> Condition: 'Item Service - for Endpoint: GET_ITEMS_MARKET_PLACE - Slow response time'
+  113. [31] critical | Policy: '[BEES] - Cart BE - Cart Service - Severity 2 Alerts - 35991c50-653c-495b-b9c3-7d093ab01b4c - SEV2' -> Condition: '[PROD] cart-service Integration Failure Rate SEV2'
+  390. [30] critical | Policy: '[BEES] - [PROD] - BF6 - Frontline Data Feature Service - Basic health policy - C06K26GQP6F - SEV2' -> Condition: 'Low pod counts'
+  479. [29] critical | Policy: '[BEES][SLO] catalog - Category - /v3 - SEV1' -> Condition: 'Availability 99.900 Burn Rate'
+  159. [29] critical | Policy: '[BEES] - Company_Store_Mgmt_1 - RabbitMQ DLQ Messages - Product Taxonomy Consumer - 0d569c74-5765-47df-bfa8-8ca0d702b558 - SEV3' -> Condition: '[PROD][Product Taxonomy Consumer] High DLQ Message Count | SEV3'
+  86. [29] critical | Policy: '[BEES] - BEES Hub - BEES Hub Shared BFF - All SEV3 Alerts - 0d569c74-5765-47df-bfa8-8ca0d702b558 - SEV3' -> Condition: 'Application with High error rate'
+  413. [28] critical | Policy: '[BEES] - [PROD] - Data Ingestion - [PROD] Sync Feedback Layer Consumer message delay too high - C01NAA3EDM2 - SEV2' -> Condition: '[PROD] Sync Feedback Layer Consumer message delay too high'
+
+------------------------------------------------------------
+### RELATED ENTITY ANALYSIS ###
+------------------------------------------------------------
+
+  * digital-communication-relay-prod: 3524
+      - [critical] [PROD][digital-communication-relay][SEV3] Response Time High > 500ms over 5 minutes: 3524
+  * cos-us-eus2-ctr-rwd-rewards: 1481
+      - [critical] Percentual Rate: 1182
+      - [critical] Server side latency: 124
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 76
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 50
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 45
+  * cos-us-eus2-plt-prd-inventory: 950
+      - [critical] Percentual Rate: 863
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 58
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 13
+      - [critical] Service Availability: 9
+      - [critical] RU Throughput on max usage : 7
+  * us-integration-guardian-fl-failed-entities-prd: 896
+      - [critical] [PROD] Feedback Layer Failed requests: 896
+  * sms-service-prod-twilio: 549
+      - [critical] [PROD][SMS Service][SEV3] Error (40x) Percentage > 25% over 10 minutes: 413
+      - [critical] [PROD][SMS Service][SEV3] Sms Service endpoint response time > 800ms over 10 minutes: 110
+      - [critical] [PROD][SMS Service][SEV3] SMS Requests from Different Countries > 8 over 10 minutes: 22
+      - [critical] [PROD][SMS Service]][SEV3] Error (50x) Percentage > 10% over 5 minutes: 4
+  * category-service-prod: 480
+      - [critical] Duration 99% < 520ms 99.000 Burn Rate: 261
+      - [critical] Availability 99.900 Burn Rate: 105
+      - [critical] Duration 99% < 90ms 99.000 Burn Rate: 80
+      - [critical] Duration 99% < 300ms 99.000 Burn Rate: 24
+      - [critical] Duration 99% < 720ms 99.000 Burn Rate: 6
+  * bees-force-order-taking-bff-prod: 466
+      - [critical] GET v1/orders - US Cluster - Response Time - SEV3: 291
+      - [critical] Response Time - SEV3: 156
+      - [critical] High Error Rate Percentage - SEV3: 15
+      - [critical] GET v1/orders - EU Cluster - Response Time - SEV3: 2
+      - [critical] [PROD] High Error Rate on bees-force-order-taking-bff-prod: 2
+  * platform-orders-command-api-prod: 379
+      - [critical] High HTTP Response Time: 364
+      - [critical] High Error Rate Percentage: 15
+  * ads-integration-service-prod-default: 322
+      - [critical] [PROD][ADS-INTEGRATION-SERVICE][HIGH-LATENCY-COUNTRY][TEMP]: 246
+      - [critical] [PROD][ADS-INTEGRATION-SERVICE][SPIKE-LATENCY-COUNTRY][TEMP]: 76
+  * combo-service-prod: 308
+      - [critical] [Platform][DTP][PROD][Combo API][SEV3] Queue duration > 500ms over 10 minutes: 301
+      - [critical] [Platform][DTP][PROD][Combo API][SEV3] Response time increased 40% above baseline over 5 minutes: 6
+      - [critical] [PROD] High Latency on combo service SEV3: 1
+  * cos-us-eus2-for-ftl-kpis: 251
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 165
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 77
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 7
+      - [critical] CosmosDB Requests by Error Code: 2
+  * cos-us-eus2-plt-prc-prices: 247
+      - [critical] Percentual Rate: 157
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 72
+      - [critical] Server side latency: 8
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 7
+      - [critical] RU Throughput on max usage : 2
+  * rewards-redemption-business-prod: 237
+      - [critical] Error Percentage > 0 % for 15 minutes: 103
+      - [critical] Error Percentage > 0% for 15 minutes: 98
+      - [critical] Error Percentage > 3% for 30 minutes: 23
+      - [critical] Error Percentage > 0% for 30 minutes: 6
+      - [critical] Error Percentage > 0 % for 30 minutes: 5
+  * order-service-ms-prod: 232
+      - [critical] [Order Service] High HTTP Response Time - POST SEV3: 147
+      - [critical] [Order Service] High HTTP Response Time - GET SEV3: 65
+      - [critical] [PROD] High HTTP Response Time: 12
+      - [critical] [PROD] High Latency on order service SEV3: 4
+      - [critical] [PROD] Order Volume Anomaly SEV1: 3
+  * cos-us-eus2-for-for-beesforce: 221
+      - [critical] Percentual Rate: 131
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 52
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 30
+      - [critical] Service Availability: 5
+      - [critical] RU Throughput on max usage : 3
+  * product-taxonomy-service-prod: 201
+      - [critical] [PROD][Product Taxonomy Service] High Response Time | SEV3: 201
+  * cos-us-eus2-plt-ord-orders: 165
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 94
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 49
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 21
+      - [critical] RU Throughput on max usage : 1
+  * cos-us-eus2-plt-prd-enforcement: 163
+      - [critical] Percentual Rate: 106
+      - [critical] Server side latency: 25
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 11
+      - [critical] Service Availability: 10
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 8
+  * data-adapter-service-prod: 149
+      - [critical] [PROD] - Data Adapter Service - Connector INTERNAL Integration Error - DO - Chavon: 91
+      - [critical] [PROD] - Data Adapter Service - Connector EXTERNAL Integration Error - BR - L'Oreal (Panpharma): 35
+      - [critical] [PROD] - Data Adapter Service - Connector EXTERNAL Integration Error - DO - Chavon: 14
+      - [critical] [PROD] - Data Adapter Service - Connector EXTERNAL Integration Error - BR - L'Oreal (SantaCruz): 5
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * cms-app-europe-prod: 146
+      - [critical] [WARNING] High transaction duration detected on the public endpoint: 146
+  * cos-us-eus2-fnt-pay-transaction: 143
+      - [critical] Server side latency: 90
+      - [critical] Percentual Rate: 33
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 20
+  * bees-force-vendor-groups-service-noenv: 141
+      - [critical] High Error Rate Percentage: 141
+  * bees-force-br-mobile-android-prod: 138
+      - [critical] [BEES Force] Response Time - Tasks - Coverage : 37
+      - [critical] [BEES Force] Response Time - Order - Payment methods: 23
+      - [critical] [BEES Force] Response Time - Login - V2: 10
+      - [critical] [BEES Force] Response Time - Task - Get Task: 10
+      - [critical] [BEES Force] Response Time - Order - Get Combos: 7
+  * frontline-data-feature-service: 137
+      - [critical] High CPU Usage Percentage: 137
+  * bees-care-identity-consumer-prod: 134
+      - [critical] [PROD] 'BEES-CARE' High Error Rate (Transactions Batch) SEV3: 134
+  * cos-us-eus2-ctr-als-globalrec: 133
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 68
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 64
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 1
+  * bees-care-identity-zendesk-sync-prod: 130
+      - [critical] [PROD] 'BEES-CARE' High Error Rate (Transactions Batch) SEV3: 130
+  * cos-us-eus2-plt-prc-promotions: 125
+      - [critical] Percentual Rate: 105
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 18
+      - [critical] Server side latency: 2
+  * cart-service-prod-us: 118
+      - [critical] [PROD] cart-service Success Rate SEV2: 68
+      - [critical] [PROD] cart-service Integration Failure Rate SEV2: 22
+      - [critical] [PROD] cart-service Response Time High SEV2 - Simulation Endpoints (US Restricted East): 17
+      - [critical] [TEST-PROD] cart-service Success Rate SEV2: 7
+      - [critical] [PROD] cart-service Response Time High SEV2 - Non-Simulation Endpoints: 4
+  * platform-orders-order-consumer-prod: 114
+      - [critical] High Error Rate Percentage: 114
+  * cart-service-prod-eu: 112
+      - [critical] [PROD] cart-service Success Rate SEV2: 99
+      - [critical] [PROD] cart-service Integration Failure Rate SEV2: 4
+      - [critical] [PROD] cart-service Response Time High SEV2 - Simulation Endpoints: 4
+      - [critical] [PROD] cart-service Cart Not Found Failure Rate SEV2: 2
+      - [critical] [TEST-PROD] cart-service Success Rate SEV2: 2
+  * b2b-br-mobile-android-prod: 107
+      - [critical] [PROD] Checkout Percentage Below 90% - SEV1: 32
+      - [critical] [PROD] [Catalog] Account Business Percentage Below 90% - SEV1: 17
+      - [critical] [PROD] Login Percentage Below 90% - SEV1: 15
+      - [critical] [Android] BR PROD: 11
+      - [critical] High Network Usage: 9
+  * cos-us-eus2-fnt-cre-balance: 102
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 102
+  * credit-assessment-accounts-consumer-prod: 101
+      - [critical] High Error Rate Percentage: 101
+  * cart-service-prod-ceus: 91
+      - [critical] [PROD] cart-service Success Rate SEV2: 85
+      - [critical] [PROD] cart-service Integration Failure Rate SEV2: 3
+      - [critical] [TEST-PROD] cart-service Success Rate SEV2: 2
+      - [critical] [PROD] cart-service Cart Not Found Failure Rate SEV2: 1
+  * bees-force-sync-consumer-prod: 85
+      - [critical] Response Time - SEV3: 85
+  * bees-force-catalog-consumer-prod: 83
+      - [critical] Response Time - SEV3: 83
+  * pricing-engine-prod: 81
+      - [critical] [PROD][Pricing Engine][SEV2] Error Percentage > 2% over 5 minutes: 74
+      - [critical] [PROD][Pricing Engine][SEV2] Charges endpoint response time > 150ms over 5 minutes: 3
+      - [critical] [PROD][Pricing Engine][SEV2] Simulation endpoint response time > 500ms over 5 minutes: 3
+      - [critical] [PROD][Pricing Engine][SEV2] Combos endpoint response time > 250ms over 5 minutes: 1
+  * recruitment-journey-bff-prod: 80
+      - [critical] Error Percentage > 1% for 5 minutes: 80
+  * frontline-metadata-configuration-prod: 78
+      - [critical] High Error Rate Percentage: 78
+  * link-vendors-bff: 78
+      - [critical] [PROD] [link vendors bff] High value of transaction errors: 78
+  * cos-us-eus2-del-one-deliveryadmin: 76
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 46
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 29
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 1
+  * cos-us-eus2-plt-prc-charges: 75
+      - [critical] Percentual Rate: 56
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 6
+      - [critical] RU Throughput on max usage : 5
+      - [critical] Server side latency: 3
+      - [critical] Service Availability: 3
+  * admin-portal-beta-prod: 74
+      - [critical] [GROW WEB] - Local Missions - Main Tier: 21
+      - [critical] [GROW WEB] Search POC - Main Tier: 10
+      - [critical] [GROW WEB] Missions - Main Tier: 9
+      - [critical] [GROW WEB] Missions - Prioritized Missions: 9
+      - [critical] [GROW WEB] Error Free Sessions - Composite : 8
+  * us-integration-event-saver-category-prd: 72
+      - [critical] [PROD] new  Categories created: 69
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+      - [critical] [PROD] deleted categories: 1
+  * order-transparency-service-prod: 71
+      - [critical] Duration 99.5% < 1500ms 99.500 Burn Rate: 30
+      - [critical] Duration 99% < 1200ms 99.000 Burn Rate: 23
+      - [critical] Duration 90% < 800ms 90.000 Burn Rate: 18
+  * fintech-payment-seller-service: 70
+      - [critical] High Memory Usage Percentage: 70
+  * file-management-service-prod: 68
+      - [critical] [PROD][file-management-api][SEV3] Response time > 800ms over 15 minutes: 68
+  * item-service-prd: 68
+      - [critical] Item Service - for Endpoint: GET_ITEMS_MARKET_PLACE - Slow response time: 38
+      - [critical] Item Service - for Endpoint: GET_ITEMS_V2 - Slow response time: 20
+      - [critical] Item Service - for Endpoint: PATCH_ITEMS_BY_ID_V2 - Slow response time: 9
+      - [critical] Duration 99% < 210ms 99.000 Burn Rate: 1
+  * cart-service-prod: 67
+      - [critical] [PROD] cart-service Success Rate SEV2: 37
+      - [critical] [TEST-PROD] cart-service Success Rate SEV2: 24
+      - [critical] [PROD] cart-service Response Time High SEV2 - Simulation Endpoints: 4
+      - [critical] [PROD] cart-service Integration Failure Rate SEV2: 2
+  * cos-us-eus2-for-ftl-core: 64
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 26
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 24
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 12
+      - [critical] RU Throughput on max usage : 2
+  * cos-us-eus2-plt-prc-combos: 62
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 32
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 27
+      - [critical] RU Throughput on max usage : 1
+      - [critical] [PROD][CosmosDB] High Rate of 429 Errors - Warning: 1
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 1
+  * cos-us-eus2-car-car-custsupport: 61
+      - [critical] Percentual Rate: 34
+      - [critical] Service Availability: 9
+      - [critical] Server side latency: 6
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 6
+      - [critical] RU Throughput on max usage : 3
+  * enforcement-consumer-service: 57
+      - [critical] Enforcement Consumer High Error Rate Percentage: 57
+  * order-service-ms-prod-north-eu: 55
+      - [critical] [Order Service] High HTTP Response Time - POST SEV3: 46
+      - [critical] [Order Service] High HTTP Response Time - GET SEV3: 9
+  * homepage-service-bff-prod: 54
+      - [critical] Response time > 3s for 30 minutes: 24
+      - [critical] Error Percentage > 3% for 30 minutes: 18
+      - [critical] Error Percentage > 10% for 5 minutes: 12
+  * enforcement-service: 54
+      - [critical] Enforcement Service - FAILED Consumption Result: 39
+      - [critical] Enforcement Service - POD with High CPU usage: 12
+      - [critical] Duration 99% < 200ms 99.000 Burn Rate: 3
+  * nfa-render-prod: 50
+      - [critical] [WEB] Availability - Checkout - Data Cart Service: 18
+      - [critical] [WEB] Availability - Checkout - Main Tier: 13
+      - [critical] [WEB] Availability - Checkout - Multi Contract: 8
+      - [critical] [WEB] Availability - Global - Main Tier: 5
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * cos-us-eus2-del-loa-loat: 48
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 35
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 11
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 2
+  * inventory-service-feed: 45
+      - [critical] [prod] Inventory - POD with High CPU usage: 45
+  * cms-app-global-prod: 41
+      - [critical] [WARNING] High transaction duration detected on the public endpoint: 24
+      - [critical] Availability 99.500 Burn Rate: 15
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * cos-us-eus2-ptr-eng-audience: 40
+      - [critical] High collection usage: 24
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 16
+  * beesforce-accountsbff-service-prod: 38
+      - [critical] GET /accounts - US Cluster - Response Time - SEV3: 28
+      - [critical] GET /accounts - EU Cluster - Response Time - SEV3: 5
+      - [critical] Response Time - SEV3: 5
+  * inventory-service-prod: 37
+      - [critical] Duration 99% <= 200ms 99.000 Burn Rate: 24
+      - [critical] [prod] Inventory High Error Rate Percentage: 6
+      - [critical] Availability 99.900 Burn Rate: 5
+      - [critical] [prod] Inventory - High Error Rate Percentage: 2
+  * deal-service-prod-feed: 37
+      - [critical] [Platform][DTP][PROD][Deal Service][SEV3] Queue duration > 500ms over 10 minutes: 37
+  * credit-onboarding-service-api: 35
+      - [critical] High Error Rate: 27
+      - [critical] Error rate: 8
+  * combo-relay-service-prod: 32
+      - [critical] Duration 99.9% < 50ms 99.900 Burn Rate: 25
+      - [critical] Duration 99% < 20ms 99.000 Burn Rate: 7
+  * cos-us-eus2-plt-dgi-identity-user: 31
+      - [critical] Percentual Rate: 15
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 7
+      - [critical] Server side latency: 5
+      - [critical] Service Availability: 4
+  * admin-portal-shared-bff-prod: 31
+      - [critical] Application with High error rate: 29
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * bees-mx-mobile-android-prod: 31
+      - [critical] [Android] MX PROD: 15
+      - [critical] High Network Usage: 11
+      - [critical] [GLOBAL-PROD] App with low page load performance: 2
+      - [critical] High Response Time: 1
+      - [critical] Mobile Standard Deviation - Login (Endpoint: bees-mem-login-bff/v1/users/%/metadata): 1
+  * bees-bo-mobile-android-prod: 30
+      - [critical] [Android] BO PROD: 14
+      - [critical] High Network Usage: 9
+      - [critical] High Memory Usage: 3
+      - [critical] Mobile Standard Deviation - Login (Endpoint: B2C_1A_SigninMobile): 2
+      - [critical] Mobile Standard Deviation - Login (Endpoint: accounts/v2/): 1
+  * data-ingestion-feedback-layer-consumer-prod: 28
+      - [critical] [PROD] Sync Feedback Layer Consumer message delay too high: 28
+  * cos-us-eus2-plt-prc-deals: 28
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 16
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 11
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 1
+  * modern-trade-management-ib5-east-us: 27
+      - [critical] [PROD] Postgres flexibleservers - High percentage of cpu usage: 9
+      - [critical] [PROD][PostgreSQL] High CPU Consumption - Critical: 9
+      - [critical] [PROD][PostgreSQL] High CPU Consumption - Warning: 9
+  * account-business-service-prod: 27
+      - [critical] Requests Performance Issue: 20
+      - [critical] Challenge Endpoints Performance Issue: 5
+      - [critical] US Challenge Endpoints Performance Issue: 2
+  * bees-hub: 26
+      - [critical] Application with High error rate: 19
+      - [critical] Application with Long web transaction duration: 5
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * cos-us-eus2-for-ftl-tasks: 25
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 12
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 7
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 6
+  * data-ingestion-etl-consumer-prod: 25
+      - [critical] [PROD] BEES Sync RabbitMQ Binding Error: 15
+      - [critical] [PROD] BEES Sync - Abnormally High Deduplication Volume SEV2: 5
+      - [critical] [PROD] BEES Sync ETL-consumer and Value Stream Relay network issues: 5
+  * inventory-service-release: 25
+      - [critical] [prod] Inventory - POD with High CPU usage: 25
+  * bees-ar-mobile-android-prod: 24
+      - [critical] High Network Usage: 10
+      - [critical] [Android] AR PROD: 8
+      - [critical] Mobile Standard Deviation - Login (Endpoint: B2C_1A_SigninMobile): 2
+      - [critical] Mobile Standard Deviation - Login (Endpoint: accounts/v2/): 1
+      - [critical] Mobile Standard Deviation - Login (Endpoint: bees-mem-login-bff/v1/users/%/metadata): 1
+  * tasks-bulk-consumer-prod: 23
+      - [critical] Response Time - SEV3: 20
+      - [critical] High Error Rate Percentage - SEV3: 3
+  * bees-ec-mobile-android-prod: 23
+      - [critical] High Network Usage: 12
+      - [critical] [Android] EC PROD: 8
+      - [critical] High Memory Usage: 1
+      - [critical] High Response Time: 1
+      - [critical] Mobile Standard Deviation - Login (Endpoint: bees-mem-login-bff/v1/users/%/metadata): 1
+  * bees-pe-mobile-android-prod: 23
+      - [critical] High Network Usage: 13
+      - [critical] [Android] PE PROD: 6
+      - [critical] High Response Time: 2
+      - [critical] [BEES Care] [MOBILE] - Error Free Sessions - Attachments: 1
+      - [critical] [BEES Care] [MOBILE] - Error Free Sessions - Rules: 1
+  * cos-us-eus2-mdc-mdc-couponsdata: 21
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 9
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 8
+      - [critical] [PROD][CosmosDB] High Server Side Latency Gateway - Warning: 4
+  * assets-bees-sync-prod: 21
+      - [critical] [PROD] 'BEES-CARE' High Error Rate (Transactions Batch) SEV3: 21
+  * vendo-mx-mobile-prod-ios: 21
+      - [critical] App launches: 21
+  * one-asset-management-bff: 21
+      - [critical] [PROD][One Asset Management BFF] High CPU Usage Percentage | SEV3: 21
+  * cos-us-eus2-ctr-cng-compilation: 20
+      - [critical] [PROD][CATALOG-SERVICE][DATABASE-AVAILABILITY][ITEM][READY]: 17
+      - [critical] [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning: 2
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 1
+  * bees-py-mobile-android-prod: 20
+      - [critical] High Network Usage: 14
+      - [critical] [Android] PY PROD: 4
+      - [critical] Mobile Standard Deviation - Login (Endpoint: accounts/v2/): 1
+      - [critical] Mobile Standard Deviation - Login (Endpoint: bees-mem-login-bff/v1/users/%/metadata): 1
+  * bees-mem-login-bff-prod: 20
+      - [critical] Response time > 2s for 5 minutes: 18
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * global-recommendation-consumer-prod: 19
+      - [critical] Error Percentage > 3% for 30 minutes: 19
+  * cos-us-eus2-plt-smt-orders-mgt: 19
+      - [critical] Percentual Rate: 17
+      - [critical] Server side latency: 1
+      - [critical] [PROD][CosmosDB] RU Throughput on MAX Usage - Warning: 1
+  * bees-hn-mobile-android-prod: 19
+      - [critical] High Network Usage: 10
+      - [critical] [Android] HN PROD: 4
+      - [critical] Mobile Standard Deviation - Login (Endpoint: B2C_1A_SigninMobile): 2
+      - [critical] Mobile Standard Deviation - Login (Endpoint: bees-mem-login-bff/v1/users/%/metadata): 2
+      - [critical] Mobile Standard Deviation - Login (Endpoint: accounts/v2/): 1
+  * b2b-za-mobile-android-prod: 19
+      - [critical] [BEES Care] [MOBILE] - Response Time - Assets: 9
+      - [critical] High Network Usage: 3
+      - [critical] [BEES Care] [MOBILE] - Error Free Sessions - Attachments: 2
+      - [critical] High Response Time: 1
+      - [critical] Mobile Standard Deviation - Login (Endpoint: bees-mem-login-bff/v1/users/%/metadata): 1
+  * search-api-indexer-prod: 19
+      - [critical] high response time: 16
+      - [critical] error rate: 3
+  * bees-co-mobile-android-prod: 19
+      - [critical] [Android] CO PROD: 6
+      - [critical] High Network Usage: 5
+      - [critical] Mobile Standard Deviation - Login (Endpoint: B2C_1A_SigninMobile): 2
+      - [critical] [BEES Care] [MOBILE] - Error Free Sessions - Rules: 2
+      - [critical] High Memory Usage: 1
+  * payment-method-service: 18
+      - [critical] High CPU Usage Percentage: 16
+      - [critical] [GLOBAL-PROD] APM with old New Relic Agent version: 2
+  * b2b-br-mobile-ios-prod: 18
+      - [critical] [iOS] BR PROD: 13
+      - [critical] High Network Usage: 2
+      - [critical] High Response Time: 2
+      - [critical] [BEES Care] [MOBILE] - Error Free Sessions - Orders: 1
+  * assets-consumer-prod: 17
+      - [critical] [PROD] 'BEES-CARE' High Error Rate (Transactions Batch) SEV3: 17
+  * bees-force-data-feature-rabbit-consumer-prod: 17
+      - [critical] Alert - High response time: 13
+      - [critical] High Error Rate Percentage: 4

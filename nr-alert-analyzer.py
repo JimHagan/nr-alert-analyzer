@@ -54,13 +54,6 @@ def print_header(title):
 def load_api_keys_from_config():
     """
     Loads API keys from a 'config.json' file in the same directory.
-    The file should have a structure like:
-    {
-      "api_keys": {
-        "key_name_1": "NRAK-...",
-        "key_name_2": "NRAK-..."
-      }
-    }
     """
     try:
         with open("config.json", "r") as f:
@@ -162,33 +155,25 @@ def run_graphql_query(api_key, payload):
         print(f"\nNetwork error occurred: {e}")
         return None
 
-def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=True, limit=10000):
+def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=False, limit=10000):
     """
-    Executes the GraphQL request to New Relic using Key-Set Pagination (Time Walking).
-    This circumvents the NRQL 2000/5000 offset limit.
+    Executes the GraphQL request using Key-Set Pagination (Time Walking).
     """
     print(f"  Fetching incidents from Account {account_id}...")
     print(f"  Window: {start_time} to {end_time}")
     print(f"  Target Limit: {limit} incidents")
     
     if exclude_warnings:
-        print("  Filter: Excluding 'warning' priority incidents (Default).")
+        print("  Filter: Excluding 'warning' priority incidents.")
     else:
-        print("  Filter: Including ALL priorities (Warnings included).")
+        print("  Filter: Including ALL priorities.")
 
     all_incidents = []
-    
-    # NRQL Batch Size (Max is typically 2000 per single query)
     BATCH_SIZE = 2000
-    
     current_until = end_time
-    
-    # Base Query Template
     base_where = "priority != 'warning'" if exclude_warnings else "true"
     
     while len(all_incidents) < limit:
-        
-        # Calculate how many we still need
         remaining = limit - len(all_incidents)
         fetch_size = min(remaining, BATCH_SIZE)
         
@@ -211,11 +196,7 @@ def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=
         }
         """
         
-        variables = {
-            "accountId": int(account_id),
-            "nrqlQuery": nrql
-        }
-        
+        variables = {"accountId": int(account_id), "nrqlQuery": nrql}
         payload = {"query": query_payload, "variables": variables}
         
         print(f"    ...Fetching batch (Size: {fetch_size}) UNTIL {current_until}...")
@@ -224,68 +205,31 @@ def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=
         if not data:
             break
             
-        # Parse Results
         try:
-            # Check for explicit GraphQL errors first
             if 'errors' in data:
-                print(f"\n    GraphQL Error in response: {json.dumps(data['errors'], indent=2)}")
+                print(f"\n    GraphQL Error: {json.dumps(data['errors'], indent=2)}")
                 break
                 
-            # Safe traversal
-            actor = data.get('data', {}).get('actor')
-            if not actor:
-                print(f"\n    Error: 'actor' field is missing or null. Data: {data}")
-                break
-                
-            account = actor.get('account')
-            if not account:
-                print(f"\n    Error: 'account' field is missing or null (check Account ID). Data: {data}")
-                break
-                
-            nrql_res = account.get('nrql')
-            if not nrql_res:
-                print(f"\n    Error: 'nrql' field is missing or null. Data: {data}")
-                break
-                
-            results = nrql_res.get('results')
-            
+            results = data.get('data', {}).get('actor', {}).get('account', {}).get('nrql', {}).get('results')
         except (KeyError, TypeError, AttributeError) as e:
-            print(f"\n    Unexpected response structure exception: {e}")
-            print(f"    Response data dump: {json.dumps(data, indent=2)}")
+            print(f"\n    Unexpected structure: {e}")
             break
             
         if not results:
-            print("    ...No more results found in this window.")
             break
             
-        # Add to master list
         all_incidents.extend(results)
-        count_so_far = len(all_incidents)
-        print(f"    ...Batch received. Total fetched: {count_so_far}")
-        
-        # Paging Logic
-        if len(results) < fetch_size:
+        if len(results) < fetch_size or len(all_incidents) >= limit:
             break
             
-        if count_so_far >= limit:
-            break
-            
-        # Prepare for next page:
-        # Get the timestamp of the LAST item in this batch.
-        last_item = results[-1]
-        last_timestamp = last_item.get('timestamp')
-        
+        last_timestamp = results[-1].get('timestamp')
         if last_timestamp:
-            # FIX: Convert epoch ms back to 'YYYY-MM-DD HH:MM:SS' string
-            # New Relic returns timestamp in epoch milliseconds
             try:
                 dt_obj = datetime.fromtimestamp(last_timestamp / 1000.0)
                 current_until = dt_obj.strftime('%Y-%m-%d %H:%M:%S')
-            except Exception as e:
-                print(f"    Warning: Failed to convert timestamp {last_timestamp}: {e}")
+            except Exception:
                 break
         else:
-            print("    Warning: No timestamp found in records, cannot paginate further.")
             break
             
     return all_incidents
@@ -293,395 +237,276 @@ def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=
 # --- Analysis Functions ---
 
 def analyze_temporal(df):
-    """
-    Analyzes incidents by time (Day and Hour).
-    """
+    """Analyzes incidents by time."""
     print_header("Temporal Analysis")
-    
-    # Ensure timestamp is datetime
     if 'timestamp' in df.columns:
-        # NR timestamps are often in milliseconds
-        # Convert to numeric first to handle potential string formatting issues
         df['timestamp_num'] = pd.to_numeric(df['timestamp'], errors='coerce')
         df['dt'] = pd.to_datetime(df['timestamp_num'], unit='ms')
     else:
-        print("Timestamp column missing. Skipping temporal analysis.")
         return ""
 
-    # 1. Daily Breakdown
     daily_counts = df.groupby(df['dt'].dt.date).size()
     print("**Incidents by Day:**")
-    if daily_counts.empty:
-        print("  No data.")
-    else:
-        for date, count in daily_counts.items():
-            print(f"  {date}: {count}")
+    for date, count in daily_counts.items():
+        print(f"  {date}: {count}")
 
-    # 2. Hourly Heatmap (Top 5 busiest hours)
     df['hour'] = df['dt'].dt.hour
-    hourly_counts = df['hour'].value_counts().sort_index()
-    
-    # Find peak hours
     peak_hours = df['hour'].value_counts().nlargest(3)
-    
-    summary_lines = [
-        f"Temporal peak: {peak_hours.index[0]}:00 had {peak_hours.iloc[0]} incidents" if not peak_hours.empty else "No temporal data"
-    ]
-    
-    return "\n".join(summary_lines)
+    summary = f"Temporal peak: {peak_hours.index[0]}:00 with {peak_hours.iloc[0]} events" if not peak_hours.empty else ""
+    return summary
 
 def analyze_severity(df):
-    """
-    Analyzes incidents by severity/priority.
-    """
+    """Analyzes severity/priority."""
     print_header("Severity Analysis")
-    
     if 'priority' not in df.columns:
-        print("Priority column missing.")
-        return "Severity info missing."
-
+        return ""
     severity_counts = df['priority'].value_counts()
     total = len(df)
-    
-    print(f"**Breakdown (Total: {total}):**")
     summary_lines = []
-    
     for priority, count in severity_counts.items():
         pct = (count / total) * 100
         print(f"  * {priority}: {count} ({pct:.1f}%)")
-        summary_lines.append(f"{priority}: {count} ({pct:.1f}%)")
-        
+        summary_lines.append(f"{priority}: {pct:.1f}%")
     return ", ".join(summary_lines)
 
 def analyze_root_cause(df, top_n=10):
-    """
-    Analyzes by Policy, Condition, and Priority to find the configuration source of noise.
-    """
+    """Analyzes configuration source."""
     print_header("Source / Root Cause Analysis")
-    
-    # Added 'priority' to the grouping columns so we can distinguish Critical vs Warning
     cols = ['policyName', 'conditionName', 'priority']
     available_cols = [c for c in cols if c in df.columns]
-    
     if not available_cols:
-        print("Policy/Condition columns missing.")
-        return "Root cause info missing."
+        return ""
     
-    # Group by Policy + Condition + Priority
     grouped = df.groupby(available_cols).size().reset_index(name='count')
     grouped = grouped.sort_values('count', ascending=False).head(top_n)
     
-    print(f"**Top {top_n} Triggering Conditions:**")
     summary_lines = []
-    
     for idx, row in grouped.iterrows():
-        policy = row.get('policyName', 'N/A')
-        condition = row.get('conditionName', 'N/A')
-        priority = row.get('priority', 'N/A')
+        p, c, pr = row.get('policyName', 'N/A'), row.get('conditionName', 'N/A'), row.get('priority', 'N/A')
         count = row['count']
-        
-        # Updated print format to include Priority
-        print(f"  {idx + 1}. [{count}] Priority: {priority} | Policy: '{policy}' -> Condition: '{condition}'")
-        
-        # Add ALL top_n items to the summary for Gemini (no artificial truncation)
-        summary_lines.append(f"[{priority}] Policy '{policy}' / Condition '{condition}' ({count} times)")
-
+        print(f"  {idx + 1}. [{count}] {pr} | Policy: '{p}' -> Condition: '{c}'")
+        summary_lines.append(f"[{pr}] '{p}' / '{c}' ({count})")
     return "\n".join(summary_lines)
 
 def analyze_entities(df, top_n=10):
-    """
-    Analyzes by Entity (Target) and shows associated conditions/priorities.
-    """
+    """Analyzes by Entity."""
     print_header("Related Entity Analysis")
-    
-    # Check for entity columns (entity.name, entityName, targetName)
     possible_cols = ['entity.name', 'targetName', 'entityName']
     target_col = next((c for c in possible_cols if c in df.columns), None)
-    
     if not target_col:
-        print("No entity/target name column found.")
-        return "Entity info missing."
+        return ""
         
-    # Get top N entities
     top_entities = df[target_col].value_counts().head(top_n)
-    
-    print(f"**Top {top_n} Noisiest Entities ({target_col}):**")
     summary_lines = []
-    
     for entity, total_count in top_entities.items():
         print(f"  * {entity}: {total_count}")
-        summary_lines.append(f"Entity: {entity} (Total: {total_count})")
-        
-        # Drill down: Find conditions for this specific entity
+        summary_lines.append(f"Entity: {entity} ({total_count})")
         entity_df = df[df[target_col] == entity]
-        
-        # Define grouping columns (Condition + Priority)
-        group_cols = []
-        if 'conditionName' in df.columns: group_cols.append('conditionName')
-        if 'priority' in df.columns: group_cols.append('priority')
-        
+        group_cols = [c for c in ['conditionName', 'priority'] if c in df.columns]
         if group_cols:
-            # Get top 5 conditions for this entity (to keep drill-down readable)
             sub_counts = entity_df.groupby(group_cols).size().sort_values(ascending=False).head(5)
-            
             for idx, count in sub_counts.items():
-                # Handle grouping index (tuple vs scalar)
-                if isinstance(idx, tuple):
-                    # Unpack based on length (Condition, Priority)
-                    cond = idx[0]
-                    prio = idx[1] if len(idx) > 1 else "N/A"
-                else:
-                    cond = idx
-                    prio = "N/A"
-                
-                # Print indented breakdown
+                cond = idx[0] if isinstance(idx, tuple) else idx
+                prio = idx[1] if isinstance(idx, tuple) and len(idx) > 1 else "N/A"
                 print(f"      - [{prio}] {cond}: {count}")
-                
-                # Add to summary string for Gemini
-                summary_lines.append(f"    - Condition: '{cond}' [{prio}] ({count})")
-
+                summary_lines.append(f"    - {cond} [{prio}] ({count})")
     return "\n".join(summary_lines)
 
-# --- Gemini Integration ---
+def generate_advanced_report(df, gemini_api_key=None):
+    """
+    Generates report.txt with SRE deep-dive metrics: flappiness, redundancy, and severity mismatches.
+    """
+    report = []
+    report.append("="*60)
+    report.append("SRE ADVANCED INCIDENT DEEP-DIVE REPORT")
+    report.append("="*60 + "\n")
+
+    # 1. Intro & Overall Summary
+    total_rows = len(df)
+    unique_ids = df['incidentId'].nunique() if 'incidentId' in df.columns else total_rows
+    report.append(f"### 1. OVERALL SUMMARY ###")
+    report.append(f"Total Incident Events: {total_rows}")
+    report.append(f"Unique Incidents: {unique_ids}")
+    if 'dt' in df.columns:
+        report.append(f"Analysis Window: {df['dt'].min()} to {df['dt'].max()}")
+    report.append("")
+
+    # 2. Noise & Redundancy
+    report.append(f"### 2. NOISE & REDUNDANCY ###")
+    if 'conditionName' in df.columns:
+        top_noisy = df['conditionName'].value_counts().head(3)
+        report.append("Top Noise Contributors:")
+        for name, count in top_noisy.items():
+            report.append(f"  - '{name}': {count} events")
+        
+        # Cross-policy duplication check
+        overlap = df.groupby('conditionName')['policyName'].nunique()
+        redundant = overlap[overlap > 1]
+        if not redundant.empty:
+            report.append("\nRedundancy Warning: Identical conditions found in multiple policies:")
+            for cond, p_count in redundant.head(5).items():
+                report.append(f"  - '{cond}' exists in {p_count} different policies.")
+    report.append("")
+
+    # 3. Flappiness
+    report.append(f"### 3. FLAPPINESS ANALYSIS ###")
+    if 'incidentId' in df.columns and 'timestamp' in df.columns:
+        times = df.groupby('incidentId')['timestamp'].agg(['min', 'max'])
+        times['duration_min'] = (times['max'] - times['min']) / 60000
+        flappy = times[(times['duration_min'] > 0) & (times['duration_min'] < 5)]
+        pct = (len(flappy) / unique_ids) * 100
+        report.append(f"Flappiness Rate: {pct:.1f}% of incidents resolve in < 5 mins.")
+        report.append("Recommendation: Evaluate threshold durations to prevent transient notification spam.")
+    else:
+        report.append("Insufficient temporal data for duration analysis.")
+    report.append("")
+
+    # 4. Criticality Patterns
+    report.append(f"### 4. CRITICALITY PATTERNS (WARNING VS CRITICAL) ###")
+    if 'priority' in df.columns and 'conditionName' in df.columns:
+        false_criticals = df[(df['priority'].str.lower() == 'critical') & 
+                             (df['conditionName'].str.contains('warning', case=False, na=False))]
+        if not false_criticals.empty:
+            report.append(f"Misalignment Found: {false_criticals['conditionName'].nunique()} conditions are labeled 'Warning' but trigger as 'Critical':")
+            for item in false_criticals['conditionName'].unique()[:5]:
+                report.append(f"  - {item}")
+        else:
+            report.append("Severity labels are consistent with priority levels.")
+    report.append("")
+
+    # 5. Entity Patterns
+    report.append(f"### 5. ENTITY SPECIFIC PATTERNS ###")
+    target_col = next((c for c in ['entity.name', 'targetName', 'entityName'] if c in df.columns), None)
+    if target_col:
+        noisy_entities = df[target_col].value_counts().head(5)
+        report.append("Entities with highest alert volume:")
+        for e, c in noisy_entities.items():
+            report.append(f"  - {e}: {c} events")
+    report.append("")
+
+    report_text = "\n".join(report)
+
+    # 6. Optional Gemini Final Pass
+    if gemini_api_key:
+        print_header("Gemini Polish Pass")
+        print("  Generating executive insights for report.txt...")
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={gemini_api_key}"
+        system_prompt = (
+            "You are a Senior SRE and Observability Architect. "
+            "Based on the technical metrics provided, write a concise Executive Summary and a list of 'Areas for Improvement'. "
+            "Focus on noise reduction strategies."
+        )
+        payload = {
+            "contents": [{"parts": [{"text": "Analyze these SRE findings:\n" + report_text}]}],
+            "systemInstruction": {"parts": [{"text": system_prompt}]}
+        }
+        try:
+            resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
+            if resp.status_code == 200:
+                ai_text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+                report_text += "\n### 6. AI-DRIVEN EXECUTIVE INSIGHTS ###\n" + ai_text
+            else:
+                report_text += f"\n[AI Insight failed: {resp.status_code}]"
+        except Exception as e:
+            report_text += f"\n[Gemini Error: {e}]"
+
+    with open("report.txt", "w") as f:
+        f.write(report_text)
+    print("\n  Advanced report saved to report.txt")
+
+# --- Gemini Helper ---
 
 def generate_gemini_prompt(df, total_events, temporal_sum, severity_sum, source_sum, entity_sum, include_full_dump=True):
-    """
-    Prepares the prompt context.
-    """
-    summary = []
-    summary.append(f"Analysis of {total_events} New Relic incidents.\n")
-    summary.append(f"--- Temporal Patterns ---\n{temporal_sum}")
-    summary.append(f"--- Severity Breakdown ---\n{severity_sum}")
-    
-    # Note: source_sum and entity_sum now contain the full Top N lists as generated by the analysis functions
-    summary.append(f"--- Top Root Causes (Policy/Condition) ---\n{source_sum}")
-    summary.append(f"--- Top Noisiest Entities & Details ---\n{entity_sum}")
-    
+    summary = [
+        f"Analysis of {total_events} NR incidents.",
+        f"--- Temporal ---\n{temporal_sum}",
+        f"--- Severity ---\n{severity_sum}",
+        f"--- Root Causes ---\n{source_sum}",
+        f"--- Entities ---\n{entity_sum}"
+    ]
     if include_full_dump:
-        # --- PARED-DOWN DATASET LOGIC ---
-        # Instead of sending everything, we select specific columns requested to save tokens.
-        
-        # 1. Base columns
-        cols_to_keep = [
-            'timestamp', 
-            'policyName', 
-            'conditionName', 
-            'runbookUrl', 
-            'priority',   # <--- Criticality/Severity (Critical vs Warning)
-            'event',      # <--- Status (Open vs Close)
-            'title'
-        ]
-        
-        # 2. Entity Name (Best effort match)
-        for entity_col in ['targetName', 'entity.name', 'entityName']:
-            if entity_col in df.columns:
-                cols_to_keep.append(entity_col)
-                break
-        
-        # 3. Notification Info (channelIds is the closest match in NrAiIncident)
-        if 'channelIds' in df.columns:
-            cols_to_keep.append('channelIds')
-            
-        # 4. Tags (Any column starting with 'tags.' or named 'tags')
-        tag_cols = [c for c in df.columns if c.startswith('tags.') or c == 'tags']
-        cols_to_keep.extend(tag_cols)
-        
-        # Filter DataFrame to only existing columns
-        existing_cols = [c for c in cols_to_keep if c in df.columns]
-        slim_df = df[existing_cols].copy()
-        
-        # Convert filtered data to JSON
-        json_dump = slim_df.to_json(orient='records', date_format='iso', default_handler=str)
-        summary.append(f"\n--- PARED-DOWN INCIDENT DATA (JSON) ---\n{json_dump}")
-        
-    else:
-        # Add a few example titles for context if not dumping everything
-        if 'title' in df.columns:
-            examples = df['title'].head(5).tolist()
-            summary.append(f"--- Example Incident Titles ---\n{examples}")
-        
+        cols = ['timestamp', 'policyName', 'conditionName', 'priority', 'event', 'title']
+        for ec in ['targetName', 'entity.name']:
+            if ec in df.columns: cols.append(ec); break
+        tag_cols = [c for c in df.columns if c.startswith('tags.')]
+        cols.extend(tag_cols)
+        slim_df = df[[c for c in cols if c in df.columns]].copy()
+        summary.append(f"\n--- DATA DUMP (JSON) ---\n{slim_df.to_json(orient='records', default_handler=str)}")
     return "\n".join(summary)
 
 def call_gemini(summary_text, api_key):
-    """
-    Calls the Gemini API for natural language analysis.
-    """
-    print_header("Gemini Deep Analysis")
-    print("  Sending data to Gemini API (model: gemini-2.5-flash-preview-09-2025)...")
-    
+    print_header("Gemini Analysis")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={api_key}"
-    
-    system_prompt = (
-        "You are a Senior SRE and Observability Expert. "
-        "Analyze the provided New Relic incident summary and raw data. "
-        "Identify the 'signals from the noise'. "
-        "1. Highlight if this is a systemic issue (policy configuration) or an acute outage (temporal spike). "
-        "2. Look for correlations in the raw data (e.g., did multiple entities fail at the exact same timestamp?). "
-        "3. Recommend specific actions to reduce alert fatigue based on the top contributors. "
-        "4. Categorize the findings into 'Urgent', 'Cleanup Required', or 'FYI'. "
-    )
-    
+    system_prompt = "You are a Senior SRE. Analyze the New Relic data. Highlight systemic issues, correlations, and remediation actions."
     payload = {
-        "contents": [{"parts": [{"text": "Analyze this incident report:\n" + summary_text}]}],
+        "contents": [{"parts": [{"text": summary_text}]}],
         "systemInstruction": {"parts": [{"text": system_prompt}]}
     }
-    
     try:
-        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
-        if response.status_code == 200:
-            result = response.json()
-            analysis = result['candidates'][0]['content']['parts'][0]['text']
-            print("\n" + analysis)
-        else:
-            print(f"Gemini API Error: {response.status_code} - {response.text}")
+        r = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
+        if r.status_code == 200:
+            print("\n" + r.json()['candidates'][0]['content']['parts'][0]['text'])
     except Exception as e:
-        print(f"Failed to call Gemini: {e}")
+        print(f"Gemini call failed: {e}")
 
 # --- Main ---
 
 def main():
     parser = argparse.ArgumentParser(description="New Relic Alert Analyzer")
+    parser.add_argument("--api_key", help="NR User API Key")
+    parser.add_argument("--account_id", help="NR Account ID")
+    parser.add_argument("--list-accounts", action="store_true", help="List accessible accounts")
     
-    # Core Arguments
-    parser.add_argument("--api_key", help="New Relic User API Key (NRAK-...). If not provided, an interactive selector will be shown.")
-    parser.add_argument("--account_id", help="New Relic Account ID. Required unless --list-accounts is used.")
-    parser.add_argument("--list-accounts", action="store_true", help="List all accessible account IDs and exit.")
-    
-    # Time Window (Optional)
-    # Defaults to 1 month ago -> Now
-    default_end = datetime.utcnow()
-    default_start = default_end - timedelta(days=30)
-    
-    parser.add_argument("--start_time", default=default_start.strftime("%Y-%m-%d %H:%M:%S"),
-                        help="Start time (YYYY-MM-DD HH:MM:SS). Default: 1 month ago.")
-    parser.add_argument("--end_time", default=default_end.strftime("%Y-%m-%d %H:%M:%S"),
-                        help="End time (YYYY-MM-DD HH:M:SS). Default: Now.")
-
-    # Reporting Options
-    parser.add_argument("--show_top_n", type=int, default=100,
-                        help="Number of top items to show for conditions and entities (10-100). Default: 10.")
-    
-    # Filtering Options
-    parser.add_argument("--include_warnings", action="store_true",
-                        help="Include warning incidents (Default is to exclude them).")
-    
-    # Limit Options
-    parser.add_argument("--limit", type=int, default=100000,
-                        help="Max incidents to fetch (Default: 100000).")
-
-    # Gemini Flags
-    parser.add_argument("--analyze_with_gemini", action="store_true", 
-                        help="Send data to Gemini for AI analysis.")
-    parser.add_argument("--gemini_api_key", help="Google Gemini API Key.")
-    
-    # NEW Flag: Option to send only summary
-    parser.add_argument("--gemini_summary_only", action="store_true",
-                        help="If set, only sends the statistical summary to Gemini (excludes the full raw data dump).")
+    end = datetime.utcnow()
+    start = end - timedelta(days=30)
+    parser.add_argument("--start_time", default=start.strftime("%Y-%m-%d %H:%M:%S"))
+    parser.add_argument("--end_time", default=end.strftime("%Y-%m-%d %H:%M:%S"))
+    parser.add_argument("--show_top_n", type=int, default=100)
+    parser.add_argument("--include_warnings", action="store_true")
+    parser.add_argument("--limit", type=int, default=100000)
+    parser.add_argument("--analyze_with_gemini", action="store_true")
+    parser.add_argument("--gemini_api_key")
+    parser.add_argument("--gemini_summary_only", action="store_true")
 
     args = parser.parse_args()
+    key = args.api_key or select_api_key_interactively(load_api_keys_from_config())
+    if not key: return
 
-    # --- API Key Logic ---
-    api_key = args.api_key
-    if not api_key:
-        api_keys = load_api_keys_from_config()
-        if not api_keys:
-            print("Error: No API key provided via --api_key and no keys found in 'config.json'.")
-            print("Please create 'config.json' in this directory with the following format:")
-            print(textwrap.dedent("""
-                {
-                  "api_keys": {
-                    "My Personal Key": "NRAK-...",
-                    "Work Staging": "NRAK-..."
-                  }
-                }
-            """))
-            return
-        
-        selected_key = select_api_key_interactively(api_keys)
-        if not selected_key:
-            print("No key selected. Exiting.")
-            return
-        api_key = selected_key
-
-    # --- List Accounts Logic ---
     if args.list_accounts:
-        list_accounts(api_key)
+        list_accounts(key)
         return
 
-    # --- Account ID Validation ---
     if not args.account_id:
-        print("Error: --account_id is required for analysis.")
-        print("You can use the --list_accounts flag to find available account IDs.")
-        return
+        print("Error: --account_id required."); return
 
-    # validate gemini key if flag is present
     if args.analyze_with_gemini and not args.gemini_api_key:
-        print("Error: --analyze_with_gemini requires --gemini_api_key.")
-        return
+        print("Error: Gemini key required."); return
 
-    # Validate show_top_n
-    if not (10 <= args.show_top_n <= 100):
-        print("Error: --show_top_n must be between 10 and 100.")
-        return
+    results = fetch_incidents(key, args.account_id, args.start_time, args.end_time, not args.include_warnings, args.limit)
+    if not results: return
 
-    # Logic: Default is to exclude warnings unless --include_warnings is passed
-    exclude_warnings = not args.include_warnings
-
-    # 1. Fetch Data
-    print_header("Data Fetching")
-    results = fetch_incidents(api_key, args.account_id, args.start_time, args.end_time, exclude_warnings, args.limit)
-    
-    if not results:
-        print("No data found or API error.")
-        return
-
-    # 2. Convert to Pandas
     df = pd.DataFrame(results)
-    total_events = len(df)
-    print(f"  Successfully loaded {total_events} incidents.")
-    
-    if total_events == 0:
-        return
-
-    # --- Generate incidents.csv ---
     df['accountId'] = args.account_id
     df.to_csv("incidents.csv", index=False)
-    print(f"  Incidents data saved to incidents.csv")
 
-    # --- Generate incident_summary.txt ---
     summary_io = io.StringIO()
     with contextlib.redirect_stdout(summary_io):
-        # 3. Run Analysis
-        temp_sum = analyze_temporal(df)
-        sev_sum = analyze_severity(df)
-        root_sum = analyze_root_cause(df, args.show_top_n)
-        ent_sum = analyze_entities(df, args.show_top_n)
+        t_sum = analyze_temporal(df)
+        s_sum = analyze_severity(df)
+        r_sum = analyze_root_cause(df, args.show_top_n)
+        e_sum = analyze_entities(df, args.show_top_n)
     
     summary_content = summary_io.getvalue()
-    
-    # Print summary to console
     print(summary_content)
-    
-    # Write summary to file
-    with open("incident_summary.txt", "w") as f:
-        f.write(summary_content)
-    print(f"\n  Analysis summary saved to incident_summary.txt")
+    with open("incident_summary.txt", "w") as f: f.write(summary_content)
 
-    # 4. Gemini Integration
+    # NEW: Advanced Granular Report
+    generate_advanced_report(df, gemini_api_key=args.gemini_api_key)
+
     if args.analyze_with_gemini:
-        # Determine if we send full dump (default yes, unless flag set)
-        send_full_dump = not args.gemini_summary_only
-        
-        if send_full_dump:
-            print("  Preparing pared-down incident dump for Gemini (Condition, Policy, Entity, etc.)...")
-        else:
-            print("  Preparing statistical summary for Gemini...")
-
-        summary_text = generate_gemini_prompt(
-            df, total_events, temp_sum, sev_sum, root_sum, ent_sum, 
-            include_full_dump=send_full_dump
-        )
-        call_gemini(summary_text, args.gemini_api_key)
+        prompt = generate_gemini_prompt(df, len(df), t_sum, s_sum, r_sum, e_sum, not args.gemini_summary_only)
+        call_gemini(prompt, args.gemini_api_key)
 
     print_header("Done")
 
