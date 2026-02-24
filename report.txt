@@ -3,41 +3,39 @@ SRE ADVANCED INCIDENT DEEP-DIVE REPORT
 ============================================================
 
 ### 1. OVERALL SUMMARY ###
-Total Incident Events: 200000
-Unique Incidents: 105423
-Analysis Window: 2026-02-01 20:17:37.536000 to 2026-02-24 23:12:00.807000
+Total Incident Events: 2000
+Unique Incidents: 1079
+Analysis Window: 2026-02-24 22:23:56.362000 to 2026-02-24 23:23:53.273000
 
 ### 2. NOISE & REDUNDANCY ###
 Top Noise Contributors:
-  - '[PROD] High number of Messages in DLQ': 178831 events
-  - '[PROD][digital-communication-relay][SEV3] Response Time High > 500ms over 5 minutes': 3524 events
-  - 'Percentual Rate': 2699 events
+  - '[PROD] High number of Messages in DLQ': 1641 events
+  - 'Percentual Rate': 79 events
+  - '[PROD][digital-communication-relay][SEV3] Response Time High > 500ms over 5 minutes': 67 events
 
 Redundancy Warning: Identical conditions found in multiple policies:
-  - 'Application with High error rate' exists in 2 different policies.
-  - 'Availability 98.200 Burn Rate' exists in 2 different policies.
-  - 'Availability 99.900 Burn Rate' exists in 8 different policies.
-  - 'CPU usage > 70% for 5 minutes' exists in 2 different policies.
-  - 'DLQ > 1 for 60 minutes' exists in 6 different policies.
+  - 'Duration 99% < 520ms 99.000 Burn Rate' exists in 2 different policies.
+  - 'High Error Rate Percentage' exists in 4 different policies.
+  - 'High Error Rate Percentage - SEV3' exists in 5 different policies.
+  - 'Response Time - SEV3' exists in 2 different policies.
+  - '[PROD] High number of Messages in DLQ' exists in 6 different policies.
 
 ### 3. FLAPPINESS ANALYSIS ###
-Flappiness Rate: 47.3% of incidents resolve in < 5 mins.
+Flappiness Rate: 44.7% of incidents resolve in < 5 mins.
 Recommendation: Evaluate threshold durations to prevent transient notification spam.
 
 ### 4. CRITICALITY PATTERNS (WARNING VS CRITICAL) ###
-Misalignment Found: 8 conditions are labeled 'Warning' but trigger as 'Critical':
-  - [PROD][CosmosDB] RU Throughput on MAX Usage - Warning
-  - [PROD][CosmosDB] High Server Side Latency Gateway - Warning
+Misalignment Found: 3 conditions are labeled 'Warning' but trigger as 'Critical':
   - [PROD][CosmosDB] High RU Consumption in a Physical Partition - Warning
-  - [WARNING] High transaction duration detected on the public endpoint
-  - [PROD][Citus] High IOPS - Warning
+  - [PROD][CosmosDB] High Server Side Latency Gateway - Warning
+  - [PROD][CosmosDB] RU Throughput on MAX Usage - Warning
 
 ### 5. ENTITY SPECIFIC PATTERNS ###
 Entities with highest alert volume:
-  - digital-communication-relay-prod: 3524 events
-  - cos-us-eus2-ctr-rwd-rewards: 1481 events
-  - cos-us-eus2-plt-prd-inventory: 950 events
-  - us-integration-guardian-fl-failed-entities-prd: 896 events
-  - sms-service-prod-twilio: 549 events
+  - digital-communication-relay-prod: 67 events
+  - cos-us-eus2-ctr-rwd-rewards: 56 events
+  - cos-us-eus2-plt-prd-inventory: 21 events
+  - fintech-payment-seller-service: 10 events
+  - sms-service-prod-twilio: 9 events
 
 [AI Insight failed: 404]

@@ -183,6 +183,7 @@ def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=
             f"SINCE '{start_time}' UNTIL '{current_until}' "
             f"LIMIT {fetch_size}"
         )
+        print(nrql)
         
         query_payload = """
         query ($accountId: Int!, $nrqlQuery: Nrql!) {
@@ -463,7 +464,7 @@ def main():
     parser.add_argument("--start_time", default=start.strftime("%Y-%m-%d %H:%M:%S"))
     parser.add_argument("--end_time", default=end.strftime("%Y-%m-%d %H:%M:%S"))
     parser.add_argument("--show_top_n", type=int, default=100)
-    parser.add_argument("--include_warnings", action="store_true")
+    parser.add_argument("--include_warnings", default = True, action="store_true")
     parser.add_argument("--limit", type=int, default=100000)
     parser.add_argument("--analyze_with_gemini", action="store_true")
     parser.add_argument("--gemini_api_key")
