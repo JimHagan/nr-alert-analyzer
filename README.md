@@ -8,7 +8,6 @@ The script reports on:
 2. **Severity Breakdown:** The ratio of Critical vs. Warning alerts.  
 3. **Root Cause:** Which Alert Policies and specific Conditions are generating the most volume (including Priority).  
 4. **Entity Hotspots:** Which specific hosts, apps, or targets are the "noisiest," with a drill-down into exactly *which* conditions are failing on them.  
-5. **(Optional) Gemini Analysis:** Uses Google's Gemini API to act as an "Auto-SRE," analyzing the raw data to provide natural language recommendations and correlation detection.
 
 ## **Dependencies**
 
@@ -16,7 +15,7 @@ The script requires the following:
 
 * **Python 3.7+**  
 * **pandas**: Used for data aggregation and statistical analysis.  
-* **requests**: Used to communicate with the New Relic and Gemini APIs.
+* **requests**
 
 ## **Setup and Installation**
 
@@ -73,26 +72,6 @@ python nr-alert-analyzer.py \\
   \--start\_time "2023-10-01 00:00:00" \\  
   \--end\_time "2023-10-02 00:00:00"
 
-### **Gemini Advanced Analysis**
-
-To get an AI-powered SRE assessment, use the \--analyze\_with\_gemini flag.
-
-Option A: Full Context (Recommended)  
-Sends a pared-down dataset of actual incident rows (Condition, Policy, Entity, Priority, Timestamp) to Gemini for deep correlation analysis.  
-python nr-alert-analyzer.py \\  
-  \--api\_key "NRAK-..." \\  
-  \--account\_id 1234567 \\  
-  \--analyze\_with\_gemini \\  
-  \--gemini\_api\_key "YOUR\_GEMINI\_KEY"
-
-Option B: Summary Only (Lite)  
-If you have data privacy concerns or token limits, use this flag to send only the statistical summary (counts and aggregates) without specific row details.  
-python nr-alert-analyzer.py \\  
-  \--api\_key "NRAK-..." \\  
-  \--account\_id 1234567 \\  
-  \--analyze\_with\_gemini \\  
-  \--gemini\_api\_key "YOUR\_GEMINI\_KEY" \\  
-  \--gemini\_summary\_only
 
 ## **Command-Line Arguments**
 
@@ -102,9 +81,6 @@ python nr-alert-analyzer.py \\
 | \--account\_id | **Yes** | The New Relic Account ID to query. | None |
 | \--start\_time | No | Start of analysis window (YYYY-MM-DD HH:MM:SS). | 7 days ago |
 | \--end\_time | No | End of analysis window (YYYY-MM-DD HH:MM:SS). | Now (UTC) |
-| \--analyze\_with\_gemini | No | Flag to enable AI analysis. | False |
-| \--gemini\_api\_key | No\* | Your Google Gemini API Key. (\*Required if above flag is set). | None |
-| \--gemini\_summary\_only | No | Flag to send only statistics to Gemini, excluding row-level data. | False |
 
 ## **Interpreting the Output**
 
@@ -144,10 +120,3 @@ This groups alerts by the **Entity** (Target Name).
 * **Nested Detail:** Under each entity, it lists the specific conditions triggering on that host.  
   * *Example:* host-prod-01 might be triggering "High CPU" (Critical) and "Disk Full" (Warning) simultaneously.
 
-### **6\. Gemini Deep Analysis (Optional)**
-
-If enabled, this section provides a natural language summary. The AI acts as a Senior SRE to:
-
-* Identify if issues are systemic (bad config) or acute (outages).  
-* Spot correlations (e.g., "Multiple entities failed with 'High CPU' at the exact same timestamp").  
-* Categorize findings into **Urgent**, **Cleanup Required**, or **FYI**.
