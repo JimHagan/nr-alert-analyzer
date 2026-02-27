@@ -6,9 +6,6 @@ This script interacts with New Relic's GraphQL API (NerdGraph) to fetch
 NrAiIncident events and provides a deep analysis of patterns by temporal 
 distribution, severity, root cause, and related entities.
 
-It mirrors the "look and feel" of the attribute-analyzer, including 
-optional Gemini integration for natural language SRE insights.
-
 Dependencies:
     pip install pandas requests
 
@@ -22,10 +19,7 @@ Dependencies:
     python nr-alert-analyzer.py ... --limit 100000
     
     python nr-alert-analyzer.py ... --show_top_n 20
-    python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_api_key "..."
-    
-    # To send ONLY the summary (lighter payload):
-    python nr-alert-analyzer.py ... --analyze_with_gemini --gemini_summary_only
+ 
 """
 
 import argparse
@@ -209,7 +203,7 @@ def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=
             f"SINCE '{start_time}' UNTIL '{current_until}' "
             f"LIMIT {fetch_size}"
         )
-        print(nrql)
+        # print(nrql)
         
         query_payload = """
         query ($accountId: Int!, $nrqlQuery: Nrql!) {
@@ -339,10 +333,11 @@ def analyze_entities(df, top_n=10):
                 summary_lines.append(f"    - {cond} [{prio}] ({count})")
     return "\n".join(summary_lines)
 
-def generate_advanced_report(df, filename, gemini_api_key=None):
+def generate_advanced_report(df, filename):
     """
     Generates report.txt with SRE deep-dive metrics: flappiness, redundancy, and severity mismatches.
     """
+    print("ADVANCED")
     report = []
     report.append("="*60)
     report.append("SRE ADVANCED INCIDENT DEEP-DIVE REPORT")
@@ -413,71 +408,10 @@ def generate_advanced_report(df, filename, gemini_api_key=None):
 
     report_text = "\n".join(report)
 
-    # 6. Optional Gemini Final Pass
-    if gemini_api_key:
-        print_header("Gemini Polish Pass")
-        print("  Generating executive insights for report.txt...")
-        
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={gemini_api_key}"
-        system_prompt = (
-            "You are a Senior SRE and Observability Architect. "
-            "Based on the technical metrics provided, write a concise Executive Summary and a list of 'Areas for Improvement'. "
-            "Focus on noise reduction strategies."
-        )
-        payload = {
-            "contents": [{"parts": [{"text": "Analyze these SRE findings:\n" + report_text}]}],
-            "systemInstruction": {"parts": [{"text": system_prompt}]}
-        }
-        try:
-            resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
-            if resp.status_code == 200:
-                ai_text = resp.json()['candidates'][0]['content']['parts'][0]['text']
-                report_text += "\n### 6. AI-DRIVEN EXECUTIVE INSIGHTS ###\n" + ai_text
-            else:
-                report_text += f"\n[AI Insight failed: {resp.status_code}]"
-        except Exception as e:
-            report_text += f"\n[Gemini Error: {e}]"
-
     with open(filename, "w") as f:
         f.write(report_text)
-    print("\n  Advanced report saved to report.txt")
+    print("\n  Advanced report saved to report.txt")    
 
-# --- Gemini Helper ---
-
-def generate_gemini_prompt(df, total_events, temporal_sum, severity_sum, source_sum, entity_sum, include_full_dump=True):
-    summary = [
-        f"Analysis of {total_events} NR incidents.",
-        f"--- Temporal ---\n{temporal_sum}",
-        f"--- Severity ---\n{severity_sum}",
-        f"--- Root Causes ---\n{source_sum}",
-        f"--- Entities ---\n{entity_sum}"
-    ]
-    if include_full_dump:
-        cols = ['timestamp', 'policyName', 'conditionName', 'priority', 'event', 'title']
-        for ec in ['targetName', 'entity.name']:
-            if ec in df.columns: cols.append(ec); break
-        tag_cols = [c for c in df.columns if c.startswith('tags.')]
-        cols.extend(tag_cols)
-        slim_df = df[[c for c in cols if c in df.columns]].copy()
-        summary.append(f"\n--- DATA DUMP (JSON) ---\n{slim_df.to_json(orient='records', default_handler=str)}")
-    return "\n".join(summary)
-
-def call_gemini(summary_text, api_key):
-    print_header("Gemini Analysis")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={api_key}"
-    system_prompt = "You are a Senior SRE. Analyze the New Relic data. Highlight systemic issues, correlations, and remediation actions."
-    payload = {
-        "contents": [{"parts": [{"text": summary_text}]}],
-        "systemInstruction": {"parts": [{"text": system_prompt}]}
-    }
-    try:
-        r = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
-        if r.status_code == 200:
-            print("\n" + r.json()['candidates'][0]['content']['parts'][0]['text'])
-    except Exception as e:
-        print(f"Gemini call failed: {e}")
-
-# --- Main ---
 
 def main():
     parser = argparse.ArgumentParser(description="New Relic Alert Analyzer")
@@ -492,10 +426,7 @@ def main():
     parser.add_argument("--show_top_n", type=int, default=100)
     parser.add_argument("--include_warnings", default = True, action="store_true")
     parser.add_argument("--limit", type=int, default=100000)
-    parser.add_argument("--analyze_with_gemini", action="store_true")
-    parser.add_argument("--gemini_api_key")
-    parser.add_argument("--gemini_summary_only", action="store_true")
-
+  
     args = parser.parse_args()
     key = args.api_key or select_api_key_interactively(load_api_keys_from_config())
     if not key: return
@@ -506,9 +437,6 @@ def main():
 
     if not args.account_id:
         print("Error: --account_id required."); return
-
-    if args.analyze_with_gemini and not args.gemini_api_key:
-        print("Error: Gemini key required."); return
 
     # Fetch and format the account name for use as a file prefix
     account_prefix = get_account_name(key, args.account_id)
@@ -533,12 +461,9 @@ def main():
     with open("{}_incident_summary.txt".format(account_prefix), "w") as f: f.write(summary_content)
 
     # NEW: Advanced Granular Report
-    generate_advanced_report(df, filename="{}_report.txt".format(account_prefix), gemini_api_key=args.gemini_api_key)
+    generate_advanced_report(df, filename="{}_report.txt".format(account_prefix))
 
-    if args.analyze_with_gemini:
-        prompt = generate_gemini_prompt(df, len(df), t_sum, s_sum, r_sum, e_sum, not args.gemini_summary_only)
-        call_gemini(prompt, args.gemini_api_key)
-
+ 
     print_header("Done")
 
 if __name__ == "__main__":
