@@ -133,6 +133,32 @@ def list_accounts(api_key):
         print(f"Unexpected response structure: {e}")
         print(f"Response data dump: {json.dumps(data, indent=2)}")
 
+def get_account_name(api_key, account_id):
+    """
+    Fetches the account name for a specific account ID and standardizes it 
+    for use as a file prefix (uppercase, spaces replaced with underscores).
+    """
+    query = """
+    query ($accountId: Int!) {
+      actor {
+        account(id: $accountId) {
+          name
+        }
+      }
+    }
+    """
+    variables = {"accountId": int(account_id)}
+    payload = {"query": query, "variables": variables}
+    
+    data = run_graphql_query(api_key, payload)
+    try:
+        name = data.get('data', {}).get('actor', {}).get('account', {}).get('name')
+        if name:
+            return name.replace(" ", "_").upper()
+    except (KeyError, TypeError, AttributeError):
+        pass
+    
+    return f"ACCOUNT_{account_id}"
 
 # --- GraphQL Functions ---
 
@@ -313,7 +339,7 @@ def analyze_entities(df, top_n=10):
                 summary_lines.append(f"    - {cond} [{prio}] ({count})")
     return "\n".join(summary_lines)
 
-def generate_advanced_report(df, gemini_api_key=None):
+def generate_advanced_report(df, filename, gemini_api_key=None):
     """
     Generates report.txt with SRE deep-dive metrics: flappiness, redundancy, and severity mismatches.
     """
@@ -412,7 +438,7 @@ def generate_advanced_report(df, gemini_api_key=None):
         except Exception as e:
             report_text += f"\n[Gemini Error: {e}]"
 
-    with open("report.txt", "w") as f:
+    with open(filename, "w") as f:
         f.write(report_text)
     print("\n  Advanced report saved to report.txt")
 
@@ -484,12 +510,16 @@ def main():
     if args.analyze_with_gemini and not args.gemini_api_key:
         print("Error: Gemini key required."); return
 
+    # Fetch and format the account name for use as a file prefix
+    account_prefix = get_account_name(key, args.account_id)
+    print(f"\nResolved Account Prefix: {account_prefix}")
+
     results = fetch_incidents(key, args.account_id, args.start_time, args.end_time, not args.include_warnings, args.limit)
     if not results: return
 
     df = pd.DataFrame(results)
     df['accountId'] = args.account_id
-    df.to_csv("incidents.csv", index=False)
+    df.to_csv("{}_incidents.csv".format(account_prefix), index=False)
 
     summary_io = io.StringIO()
     with contextlib.redirect_stdout(summary_io):
@@ -500,10 +530,10 @@ def main():
     
     summary_content = summary_io.getvalue()
     print(summary_content)
-    with open("incident_summary.txt", "w") as f: f.write(summary_content)
+    with open("{}_incident_summary.txt".format(account_prefix), "w") as f: f.write(summary_content)
 
     # NEW: Advanced Granular Report
-    generate_advanced_report(df, gemini_api_key=args.gemini_api_key)
+    generate_advanced_report(df, filename="{}_report.txt".format(account_prefix), gemini_api_key=args.gemini_api_key)
 
     if args.analyze_with_gemini:
         prompt = generate_gemini_prompt(df, len(df), t_sum, s_sum, r_sum, e_sum, not args.gemini_summary_only)

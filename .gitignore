@@ -1,3 +1,4 @@
-incidents.csv
-incident_summary.txt
-report.txt
+do_it.sh
+*incidents.csv
+*incident_summary.txt
+*report.txt
