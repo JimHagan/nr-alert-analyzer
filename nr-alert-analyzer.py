@@ -175,7 +175,7 @@ def run_graphql_query(api_key, payload):
         print(f"\nNetwork error occurred: {e}")
         return None
 
-def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings=False, limit=10000):
+def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings, limit=10000):
     """
     Executes the GraphQL request using Key-Set Pagination (Time Walking).
     """
@@ -424,7 +424,7 @@ def main():
     parser.add_argument("--start_time", default=start.strftime("%Y-%m-%d %H:%M:%S"))
     parser.add_argument("--end_time", default=end.strftime("%Y-%m-%d %H:%M:%S"))
     parser.add_argument("--show_top_n", type=int, default=100)
-    parser.add_argument("--include_warnings", default = True, action="store_true")
+    parser.add_argument("--include_warnings", default = False, action="store_true")
     parser.add_argument("--limit", type=int, default=100000)
   
     args = parser.parse_args()
@@ -447,6 +447,8 @@ def main():
 
     df = pd.DataFrame(results)
     df['accountId'] = args.account_id
+    cols_to_drop = df.columns[df.columns.str.startswith('tags.')]
+    df = df.drop(columns=cols_to_drop)
     df.to_csv("{}_incidents.csv".format(account_prefix), index=False)
 
     summary_io = io.StringIO()
