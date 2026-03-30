@@ -209,7 +209,7 @@ def fetch_incidents(api_key, account_id, start_time, end_time, exclude_warnings,
         query ($accountId: Int!, $nrqlQuery: Nrql!) {
           actor {
             account(id: $accountId) {
-              nrql(query: $nrqlQuery) {
+              nrql(query: $nrqlQuery, timeout: 600.0) {
                 results
               }
             }
